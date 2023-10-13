@@ -22,6 +22,9 @@ session_instance = Session()
 
 
 def commit_data():
+    """
+    Commit sample user data to the database.
+    """
     name = "pes"
     email = "email@email.email"
     password = "passwordE"
@@ -39,7 +42,11 @@ from werkzeug.exceptions import HTTPException
 
 @api.errorhandler(HTTPException)
 def handle_exception(e):
-    """Return JSON instead of HTML for HTTP errors."""
+    """
+    Handle HTTP exceptions by returning JSON responses.
+
+    :param e: The HTTPException to handle.
+    """
     # start with the correct headers and status code from the error
     response = e.get_response()
     # replace the body with JSON
@@ -56,25 +63,39 @@ def handle_exception(e):
 
 @api.after_request
 def add_header(response):
+    """
+    Add an Access-Control-Allow-Origin header to the response.
+
+    :param response: The Flask response object.
+    """
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
 
 
 def generate_jwt(payload):
-    try:
-        # Set the payload data
-        payload["exp"] = datetime.utcnow() + timedelta(days=1)  # Token expiration time
-        payload["iat"] = datetime.utcnow()  # Token issuance time
+    """
+    Generate a JSON Web Token (JWT) with the given payload.
 
-        # Create and sign the JWT token
+    :param payload: The data to include in the JWT payload.
+    :return: The generated JWT token.
+    """
+    try:
+        payload["exp"] = datetime.utcnow() + timedelta(days=1) 
+        payload["iat"] = datetime.utcnow() 
+
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
         return token
     except Exception as e:
         return str(e)
 
 
-# Function to verify and decode a JWT token
 def verify_jwt(token):
+    """
+    Verify and decode a JSON Web Token (JWT).
+
+    :param token: The JWT token to verify and decode.
+    :return: The decoded payload or an error message.
+    """
     try:
         # Verify and decode the token
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
@@ -86,6 +107,12 @@ def verify_jwt(token):
 
 
 def generateToken(ID):
+    """
+    Generate a JWT token with a user's ID as the payload.
+
+    :param ID: The User_ID to include in the JWT payload.
+    :return: The generated JWT token.
+    """
     return generate_jwt(
         {
             "User_ID": ID,
@@ -95,6 +122,12 @@ def generateToken(ID):
 
 # decorator for verifying the JWT
 def token_required(f):
+    """
+    Decorator function for verifying JWT tokens.
+
+    :param f: The function to decorate.
+    :return: The decorated function.
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
@@ -125,19 +158,9 @@ def token_required(f):
 @api.route("/register", methods=["POST"])
 def register():
     """
-    Handle user registration.
+    Handle user registration via a POST request.
 
-    This function handles user registration by processing POST requests and checking the provided data.
-    It ensures that all required fields are filled, the username is not already in the database,
-    and that the provided password and password confirmation match before storing the data in the database.
-
-    Args:
-        None
-
-    Returns:
-        If the registration is successful, it returns a JSON response indicating that the data is stored in the database.
-        If the provided data does not match the criteria, it returns a JSON response indicating a mismatch or missing fields.
-        If the endpoint is accessed using a non-POST request, it returns a JSON response indicating that only POST requests are supported.
+    :return: JSON response indicating the registration status.
     """
     if request.method == "POST":
         username = request.form.get("username")
@@ -161,17 +184,9 @@ def register():
 @api.route("/login", methods=["POST"])
 def login():
     """
-    Handle user login.
+    Handle user login via a POST request.
 
-    This function handles user login by checking the provided username and password against a database.
-    If the login is successful, it stores the username in a session.
-
-    Args:
-        None
-
-    Returns:
-        If the login is successful, it returns an empty JSON response.
-        If the login fails, it returns a string message indicating that the name or password is incorrect.
+    :return: JSON response containing a JWT token on successful login.
     """
     if request.method == "POST":
         username = request.form["username"]
@@ -194,11 +209,22 @@ def login():
 @api.route("/securedPing")
 @token_required
 def ping(current_user):
+    """
+    A secured route that requires a valid JWT token for access.
+
+    :param current_user: The user context provided by the token_required decorator.
+    :return: JSON response indicating the user who provided the token.
+    """
     return jsonify("A valid token provided by " + current_user.Name)
 
 
 @socketio.on("my_event")
 def handle_my_event(data):
+    """
+    Handle a socket.io event.
+
+    :param data: Data received from the client.
+    """
     print("Data received from the client:", data)
     message = "fuck you"
     socketio.emit("my_response", {"data": f"Received: {message}"})
