@@ -1,13 +1,20 @@
 """ May the spaghetti begin """
+
+
 from flask import jsonify, Flask, request, session, json
-from database import func
-from models import Users
-from database import Session
 from flask_socketio import SocketIO
-import jwt
+
+from database import func
+from database import Session
+from models import Users
+
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from functools import wraps
+
 from datetime import datetime, timedelta
+
+import jwt
 
 SECRET_KEY = "Praeteritum-CHANGE-ME-TO-SOMETHING-RANDOM"
 
@@ -168,8 +175,9 @@ def register():
         email = request.form.get("email")
 
         if username and password:
-            if username not in Users:
-                usr = Users(Name=username, Password=password, Email=email)
+            q = session_instance.query(Users).filter_by(Email=email).first()
+            if not q:
+                usr = Users(Name=username, Password=generate_password_hash(password), Email=email)
                 session_instance.add(usr)
                 session_instance.commit()
 
@@ -189,13 +197,12 @@ def login():
     :return: JSON response containing a JWT token on successful login.
     """
     if request.method == "POST":
-        username = request.form["username"]
+        email = request.form["email"]
         password = request.form["password"]
 
-        user_obj = session_instance.query(Users).filter_by(Name=username).first()
+        user_obj = session_instance.query(Users).filter_by(Email=email).first()
 
-        if user_obj and user_obj.Password == password:
-            session["username"] = username
+        if user_obj and check_password_hash(user_obj.Password, password):
             session_instance.close()
 
             return jsonify({"token": generateToken(user_obj.User_ID)})
