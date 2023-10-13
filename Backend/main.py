@@ -8,10 +8,19 @@ Session = sessionmaker() # TODO: Make alternative for our case
 session_instance = Session()
 DB = [] # TODO: Make DB
 
+@api.after_request
+def add_header(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+
 @api.route("/", methods=["GET", "POST"])
 def root():
     testEndpoint = ["hello", "world!"]
     return jsonify(testEndpoint)
+
+@api.route("/ping", methods=["GET"])
+def ping():
+    return jsonify("Pong")
 
 @api.route("/register", methods=["POST"])
 def register():
@@ -72,12 +81,12 @@ def login():
             session["username"] = username
             session_instance.close()
 
-            return jsonify()
+            return jsonify("Logged in")
         else:
             session_instance.close()
             return "Wrong name or password"
     else:
-        return jsonify()
+        return jsonify("Method was not POST")
 
 
 if __name__ == "__main__":
