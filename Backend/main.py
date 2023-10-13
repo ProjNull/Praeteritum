@@ -99,11 +99,11 @@ def token_required(f):
     def decorated(*args, **kwargs):
         token = None
         # jwt is passed in the request header
-        if "x-access-token" in request.headers:
-            token = request.headers["x-access-token"]
+        if "Authorization" in request.headers:
+            token = request.headers["Authorization"]
             # return 401 if token is not passed
         if not token:
-            return jsonify({"message": "Token is missing !!"}), 401
+            return jsonify({"message": "Token wasn't provided"}), 401
 
         try:
             # decoding the payload to fetch the stored details
@@ -112,7 +112,10 @@ def token_required(f):
                 session_instance.query(Users).filter_by(User_ID=data["User_ID"]).first()
             )
         except Exception as e:
-            return jsonify({"message": "Token is invalid !!", "e": str(e)}), 401
+            return (
+                jsonify({"message": "Token evaluation unsuccessfull"}),
+                401,
+            )
         # returns the current logged in users context to the routes
         return f(current_user, *args, **kwargs)
 
