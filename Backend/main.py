@@ -4,6 +4,10 @@ from database import func
 from models import Users
 from database import Session
 from flask_socketio import SocketIO
+import jwt
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+from datetime import datetime, timedelta
 
 api = Flask(__name__)
 api.secret_key = "Praeteritum"
@@ -53,14 +57,37 @@ def add_header(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
-@api.route("/", methods=["GET", "POST"])
-def root():
-    testEndpoint = ["hello", "world!"]
-    return jsonify(testEndpoint)
+def generateToken(ID):
+    Token = jwt.encode({
+        'User_ID': ID,
+        'exp' : datetime.utcnow() + timedelta(hours = 2)
+    }, api.config['SECRET_KEY'])
+    return Token
 
-@api.route("/ping", methods=["GET"])
-def ping():
-    return jsonify("Pong")
+# decorator for verifying the JWT
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        # jwt is passed in the request header
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+            # return 401 if token is not passed
+        if not token:
+            return jsonify({'message' : 'Token is missing !!'}), 401
+
+        try:
+            # decoding the payload to fetch the stored details
+            data = jwt.decode(token, api.secret_key)
+            current_user = Users.query.filter_by(User_ID = data['User_ID']).first()
+        except:
+            return jsonify({
+            'message' : 'Token is invalid !!'
+        }),             401
+        # returns the current logged in users context to the routes
+        return f(current_user, *args, **kwargs)
+
+    return decorated
 
 @api.route("/register", methods=["POST"])
 def register():
@@ -82,16 +109,18 @@ def register():
     if request.method == "POST":
         username = request.form.get('username')
         password = request.form.get('password')
+        email = request.form.get('email')
 
-        
         if username and password:
             if username not in Users:
-                max_uid = session_instance.query(func.max(Users.ID)).scalar() or 0
                 usr = Users(
-                    ID = max_uid+1,
-                    user=Users,
-                    password=password
+                    Name=username,
+                    Password=password,
+                    Email = email
                 )
+                session_instance.add(usr)
+                session_instance.commit()
+
                 return jsonify("Data is now in DB!")
             return jsonify("Data does not match")
         else:
@@ -118,18 +147,25 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        user_obj = session_instance.query(Users).filter_by(username=username).first()
+        user_obj = session_instance.query(Users).filter_by(Name=username).first()
 
         if user_obj and user_obj.Password == password:  
             session["username"] = username
             session_instance.close()
 
-            return jsonify("Logged in")
+            return jsonify({
+                "token": generateToken(user_obj.User_ID)
+            })
         else:
             session_instance.close()
             return "Wrong name or password"
     else:
         return jsonify("Method was not POST")
+
+@api.route("/securedPing")
+@token_required
+def ping():
+    return jsonify("I love men")
 
 @socketio.on('my_event')
 def handle_my_event(data):
