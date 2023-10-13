@@ -9,34 +9,33 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime, timedelta
 
+SECRET_KEY = "Praeteritum-CHANGE-ME-TO-SOMETHING-RANDOM"
+
 api = Flask(__name__)
-api.secret_key = "Praeteritum"
+api.secret_key = SECRET_KEY
 
 socketio = SocketIO(api)
 
-socketio.init_app(
-    api,
-    cors_allowed_origins="*"
-)
-    
+socketio.init_app(api, cors_allowed_origins="*")
+
 session_instance = Session()
+
 
 def commit_data():
     name = "pes"
     email = "email@email.email"
     password = "passwordE"
 
-    usr = Users(
-            Name=name,
-            Password=password,
-            Email = email
-        )
-    
+    usr = Users(Name=name, Password=password, Email=email)
+
     session_instance.add(usr)
     session_instance.commit()
+
+
 commit_data()
 
 from werkzeug.exceptions import HTTPException
+
 
 @api.errorhandler(HTTPException)
 def handle_exception(e):
@@ -44,25 +43,55 @@ def handle_exception(e):
     # start with the correct headers and status code from the error
     response = e.get_response()
     # replace the body with JSON
-    response.data = json.dumps({
-        "code": e.code,
-        "name": e.name,
-        "description": e.description,
-    })
+    response.data = json.dumps(
+        {
+            "code": e.code,
+            "name": e.name,
+            "description": e.description,
+        }
+    )
     response.content_type = "application/json"
     return response
 
+
 @api.after_request
 def add_header(response):
-    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers["Access-Control-Allow-Origin"] = "*"
     return response
 
+
+def generate_jwt(payload):
+    try:
+        # Set the payload data
+        payload["exp"] = datetime.utcnow() + timedelta(days=1)  # Token expiration time
+        payload["iat"] = datetime.utcnow()  # Token issuance time
+
+        # Create and sign the JWT token
+        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+        return token
+    except Exception as e:
+        return str(e)
+
+
+# Function to verify and decode a JWT token
+def verify_jwt(token):
+    try:
+        # Verify and decode the token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return "Token has expired."
+    except jwt.InvalidTokenError as e:
+        return str(e)
+
+
 def generateToken(ID):
-    Token = jwt.encode({
-        'User_ID': ID,
-        'exp' : datetime.utcnow() + timedelta(hours = 2)
-    }, api.config['SECRET_KEY'])
-    return Token
+    return generate_jwt(
+        {
+            "User_ID": ID,
+        }
+    )
+
 
 # decorator for verifying the JWT
 def token_required(f):
@@ -70,24 +99,25 @@ def token_required(f):
     def decorated(*args, **kwargs):
         token = None
         # jwt is passed in the request header
-        if 'x-access-token' in request.headers:
-            token = request.headers['x-access-token']
+        if "x-access-token" in request.headers:
+            token = request.headers["x-access-token"]
             # return 401 if token is not passed
         if not token:
-            return jsonify({'message' : 'Token is missing !!'}), 401
+            return jsonify({"message": "Token is missing !!"}), 401
 
         try:
             # decoding the payload to fetch the stored details
-            data = jwt.decode(token, api.secret_key)
-            current_user = Users.query.filter_by(User_ID = data['User_ID']).first()
-        except:
-            return jsonify({
-            'message' : 'Token is invalid !!'
-        }),             401
+            data = verify_jwt(token)
+            current_user = (
+                session_instance.query(Users).filter_by(User_ID=data["User_ID"]).first()
+            )
+        except Exception as e:
+            return jsonify({"message": "Token is invalid !!", "e": str(e)}), 401
         # returns the current logged in users context to the routes
         return f(current_user, *args, **kwargs)
 
     return decorated
+
 
 @api.route("/register", methods=["POST"])
 def register():
@@ -107,17 +137,13 @@ def register():
         If the endpoint is accessed using a non-POST request, it returns a JSON response indicating that only POST requests are supported.
     """
     if request.method == "POST":
-        username = request.form.get('username')
-        password = request.form.get('password')
-        email = request.form.get('email')
+        username = request.form.get("username")
+        password = request.form.get("password")
+        email = request.form.get("email")
 
         if username and password:
             if username not in Users:
-                usr = Users(
-                    Name=username,
-                    Password=password,
-                    Email = email
-                )
+                usr = Users(Name=username, Password=password, Email=email)
                 session_instance.add(usr)
                 session_instance.commit()
 
@@ -127,6 +153,7 @@ def register():
             return jsonify("Please fill out all fields.")
     # If not POST
     return jsonify("This endpoint only supports POST requests for registration.")
+
 
 @api.route("/login", methods=["POST"])
 def login():
@@ -144,35 +171,35 @@ def login():
         If the login fails, it returns a string message indicating that the name or password is incorrect.
     """
     if request.method == "POST":
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form["username"]
+        password = request.form["password"]
 
         user_obj = session_instance.query(Users).filter_by(Name=username).first()
 
-        if user_obj and user_obj.Password == password:  
+        if user_obj and user_obj.Password == password:
             session["username"] = username
             session_instance.close()
 
-            return jsonify({
-                "token": generateToken(user_obj.User_ID)
-            })
+            return jsonify({"token": generateToken(user_obj.User_ID)})
         else:
             session_instance.close()
             return "Wrong name or password"
     else:
         return jsonify("Method was not POST")
 
+
 @api.route("/securedPing")
 @token_required
-def ping():
-    return jsonify("I love men")
+def ping(current_user):
+    return jsonify("A valid token provided by " + current_user.Name)
 
-@socketio.on('my_event')
+
+@socketio.on("my_event")
 def handle_my_event(data):
     print("Data received from the client:", data)
     message = "fuck you"
-    socketio.emit('my_response', {'data': f'Received: {message}'})
+    socketio.emit("my_response", {"data": f"Received: {message}"})
 
 
 if __name__ == "__main__":
-    socketio.run(api, debug=True, host="172.21.112.249", port="8002")
+    socketio.run(api, debug=True, host="0.0.0.0", port="8002")

@@ -49,7 +49,7 @@ class Feedback(Base):
 
     Feedback_ID = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
     Content = Column(String, nullable=False)
-    Questions_ID = Column(Integer, ForeignKey("Questions.Questions_ID"), nullable=False)
+    Questions_ID = Column(Integer, ForeignKey("QuestionsModel.Questions_ID"), nullable=False)
     User_ID = Column(Integer, ForeignKey("UsersModel.User_ID"), nullable=False)
 
 
