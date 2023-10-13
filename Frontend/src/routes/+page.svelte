@@ -1,4 +1,7 @@
 <script>
+	import { browser } from "$app/environment";
+	import Cookies from "js-cookie";
+	import { goto } from "$app/navigation";
 	import apiHandler from "$lib/apiHandler";
 	const api = new apiHandler();
 	let reponse = {};
@@ -7,7 +10,11 @@
 		console.log(reponse);
 	})()
 
+	if (Cookies.get("token")) {
 
+	} else {
+		goto("/login")
+	}
 </script>
 
 <div class="loading">
