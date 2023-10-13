@@ -18,8 +18,8 @@ class Permissions(Base):
 
     Permission_ID = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
     Permission_level = Column(Integer, nullable=False, default=0)
-    User_ID = Column(Integer, nullable=False, ForeignKey=ForeignKey("UsersModel.User_ID"))
-    Group_ID = Column(Integer, nullable=False, unique=False, primary_key=False, ForeignKey=ForeignKey("GroupsModel.Group_ID"))
+    User_ID = Column(Integer, ForeignKey('UsersModel.User_ID'), nullable=False)
+    Group_ID = Column(Integer, ForeignKey('GroupsModel.Group_ID'), nullable=False, unique=False, primary_key=False)
 
 class Groups(Base):
     __tablename__ = "GroupsModel"
