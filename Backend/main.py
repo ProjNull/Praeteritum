@@ -145,9 +145,9 @@ def register():
     :return: JSON response indicating the registration status.
     """
     if request.method == "POST":
-        name = request.form.get("displayname")
-        password = request.form.get("password")
-        email = request.form.get("email")
+        name = request.json.get("displayname")
+        password = request.json.get("password")
+        email = request.json.get("email")
 
         if email and password:
             if not name:
@@ -187,8 +187,8 @@ def login():
     :return: JSON response containing a JWT token on successful login.
     """
     if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
+        email = request.json["email"]
+        password = request.json["password"]
 
         user_obj = session_instance.query(Users).filter_by(Email=email).first()
 
