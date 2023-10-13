@@ -1,12 +1,28 @@
-from flask import jsonify, Flask, request, session
+from flask import jsonify, Flask, request, session, json
 from sqlalchemy.orm import sessionmaker
+from directus.clients import DirectusClient_V9
 
 api = Flask(__name__)
 api.secret_key = "Praeteritum"
 
 Session = sessionmaker() # TODO: Make alternative for our case
 session_instance = Session()
-DB = [] # TODO: Make DB
+
+from werkzeug.exceptions import HTTPException
+
+@api.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    # start with the correct headers and status code from the error
+    response = e.get_response()
+    # replace the body with JSON
+    response.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    })
+    response.content_type = "application/json"
+    return response
 
 @api.after_request
 def add_header(response):
