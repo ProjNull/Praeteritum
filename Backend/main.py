@@ -1,11 +1,11 @@
 from flask import jsonify, Flask, request, session, json
-from sqlalchemy.orm import sessionmaker
-from directus.clients import DirectusClient_V9
+from database import func
+from models import user
+from database import Session
 
 api = Flask(__name__)
 api.secret_key = "Praeteritum"
 
-Session = sessionmaker() # TODO: Make alternative for our case
 session_instance = Session()
 
 from werkzeug.exceptions import HTTPException
