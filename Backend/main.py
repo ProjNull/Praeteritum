@@ -1,12 +1,36 @@
+""" May the spaghetti begin """
 from flask import jsonify, Flask, request, session, json
 from database import func
-from models import user
+from models import Users
 from database import Session
+from flask_socketio import SocketIO
 
 api = Flask(__name__)
 api.secret_key = "Praeteritum"
 
+socketio = SocketIO(api)
+
+socketio.init_app(
+    api,
+    cors_allowed_origins="*"
+)
+    
 session_instance = Session()
+
+def commit_data():
+    name = "pes"
+    email = "email@email.email"
+    password = "passwordE"
+
+    usr = Users(
+            Name=name,
+            Password=password,
+            Email = email
+        )
+    
+    session_instance.add(usr)
+    session_instance.commit()
+commit_data()
 
 from werkzeug.exceptions import HTTPException
 
@@ -58,11 +82,16 @@ def register():
     if request.method == "POST":
         username = request.form.get('username')
         password = request.form.get('password')
-        passwordCheck = request.form.get('passwordCheck')
+
         
-        if username and password and passwordCheck:
-            if username not in DB and password == passwordCheck:
-                # TODO: Commit data to DB
+        if username and password:
+            if username not in Users:
+                max_uid = session_instance.query(func.max(Users.ID)).scalar() or 0
+                usr = Users(
+                    ID = max_uid+1,
+                    user=Users,
+                    password=password
+                )
                 return jsonify("Data is now in DB!")
             return jsonify("Data does not match")
         else:
@@ -87,13 +116,11 @@ def login():
     """
     if request.method == "POST":
         username = request.form['username']
-        password = request.form["password"]
+        password = request.form['password']
 
-        # TODO: Querry real DB
-        user_obj = "object"
+        user_obj = session_instance.query(Users).filter_by(username=username).first()
 
-
-        if user_obj and user_obj.password == password:  
+        if user_obj and user_obj.Password == password:  
             session["username"] = username
             session_instance.close()
 
@@ -104,6 +131,12 @@ def login():
     else:
         return jsonify("Method was not POST")
 
+@socketio.on('my_event')
+def handle_my_event(data):
+    print("Data received from the client:", data)
+    message = "fuck you"
+    socketio.emit('my_response', {'data': f'Received: {message}'})
+
 
 if __name__ == "__main__":
-    api.run(host="0.0.0.0", port=8002)
+    socketio.run(api, debug=True, host="172.21.112.249", port="8002")
