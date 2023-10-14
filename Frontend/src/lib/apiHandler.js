@@ -36,6 +36,45 @@ export default class APIHandler {
 			throw new Error('Fetch error: ' + error);
 		}
 	}
+	
+	async login(email, password) {
+		try {
+			const responceRaw = await fetch(this.url + this.endpointFormat("login"), {
+				method:"post",
+				headers: {
+					"Content-Type":"application/json"
+				},
+				body: `{
+					"email": "${email}",
+					"password": "${password}"
+				}`
+			});
+			const responce = await responceRaw.json();
+			return responce;
+		} catch (error) {
+			throw new Error('Fetch error: ' + error);
+		}
+	}
+
+	async register(email, password,display) {
+		try {
+			const responceRaw = await fetch(this.url + this.endpointFormat("register"), {
+				method:"post",
+				headers: {
+					"Content-Type":"application/json"
+				},
+				body: `{
+					"email": "${email}",
+					"password": "${password}",
+					"displayname": "${display}"
+				}`
+			});
+			const responce = await responceRaw.json();
+			return responce;
+		} catch (error) {
+			throw new Error('Fetch error: ' + error);
+		}
+	}
 	/**
 	 * @description Checks and formats endpoint url.
 	 * @throws {Error} Errors out if
