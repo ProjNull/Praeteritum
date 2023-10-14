@@ -565,6 +565,198 @@ def changePhase(u: Users):
     return jsonify({"message": "Board phase changed successfully."}), 200
 
 
+@api.route("/togglePostVisibility", methods=["POST"])
+@requires_authorization
+def togglePostVisibility(u: Users):
+    """
+    Toggle post visibility for a board via a POST request.
+
+    This function allows authorized users (admin or manager) to toggle the visibility of posts for a board based on the provided Board_ID.
+
+    :param u: The authorized user with appropriate permissions.
+    :return: JSON response indicating the status of the post visibility toggle or an error message if the operation fails or if the user lacks the necessary permissions.
+    """
+    data = request.get_json()
+
+    if "board_id" not in data:
+        return jsonify({"error": "Missing 'board_id' in the request data."}), 400
+
+    board_id = data["board_id"]
+
+    # Check if the board exists
+    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+
+    if board is None:
+        return jsonify({"error": f"Board with ID {board_id} not found."}), 404
+
+    # Check if the user has the required permissions for this group
+    permissions = session_instance.query(Permissions).filter(
+        Permissions.User_ID == u.User_ID,
+        Permissions.Group_ID == board.Group_ID,
+        Permissions.Permission_Level >= 2,  # Modify this level as needed
+    ).first()
+
+    if not permissions:
+        return jsonify({"error": "You don't have the necessary permissions to toggle post visibility for this board."}), 403
+
+    # Toggle post visibility
+    board.RevealPosts = not board.RevealPosts
+    session_instance.commit()
+
+    return jsonify({"message": f"Post visibility for board {board_id} has been toggled."}), 200
+
+
+@api.route("/getPostVisibility", methods=["GET"])
+def getPostVisibility():
+    """
+    Retrieve the post visibility status for a board via a GET request.
+
+    This function allows users to retrieve the current post visibility status for a board based on the provided Board_ID.
+
+    :return: JSON response containing the current post visibility status for the board or an error message if the board is not found.
+    """
+    board_id = request.args.get("board_id")
+
+    if not board_id:
+        return jsonify({"error": "Missing 'board_id' in the query parameters."}), 400
+
+    # Check if the board exists
+    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+
+    if board is None:
+        return jsonify({"error": f"Board with ID {board_id} not found."}), 404
+
+    return jsonify({"reveal_posts": board.RevealPosts}), 200
+
+
+@api.route("/toggleBoardLock", methods=["POST"])
+@requires_authorization
+def toggleBoardLock(u: Users):
+    """
+    Toggle board locking for a board via a POST request.
+
+    This function allows authorized users (admin or manager) to toggle the locking of a board based on the provided Board_ID.
+
+    :param u: The authorized user with appropriate permissions.
+    :return: JSON response indicating the status of the board locking toggle or an error message if the operation fails or if the user lacks the necessary permissions.
+    """
+    data = request.get_json()
+
+    if "board_id" not in data:
+        return jsonify({"error": "Missing 'board_id' in the request data."}), 400
+
+    board_id = data["board_id"]
+
+    # Check if the board exists
+    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+
+    if board is None:
+        return jsonify({"error": f"Board with ID {board_id} not found."}), 404
+
+    # Check if the user has the required permissions for this group
+    permissions = session_instance.query(Permissions).filter(
+        Permissions.User_ID == u.User_ID,
+        Permissions.Group_ID == board.Group_ID,
+        Permissions.Permission_Level >= 2,  # Modify this level as needed
+    ).first()
+
+    if not permissions:
+        return jsonify({"error": "You don't have the necessary permissions to toggle board locking for this board."}), 403
+
+    # Toggle board locking
+    board.isLocked = not board.isLocked
+    session_instance.commit()
+
+    return jsonify({"message": f"Board locking for board {board_id} has been toggled."}), 200
+
+
+@api.route("/getBoardLockStatus", methods=["GET"])
+def getBoardLockStatus():
+    """
+    Retrieve the board locking status for a board via a GET request.
+
+    This function allows users to retrieve the current board locking status for a board based on the provided Board_ID.
+
+    :return: JSON response containing the current board locking status for the board or an error message if the board is not found.
+    """
+    board_id = request.args.get("board_id")
+
+    if not board_id:
+        return jsonify({"error": "Missing 'board_id' in the query parameters."}), 400
+
+    # Check if the board exists
+    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+
+    if board is None:
+        return jsonify({"error": f"Board with ID {board_id} not found."}), 404
+
+    return jsonify({"is_locked": board.isLocked}), 200
+
+
+@api.route("/toggleVotingLock", methods=["POST"])
+@requires_authorization
+def toggleVotingLock(u: Users):
+    """
+    Toggle voting locking for a board via a POST request.
+
+    This function allows authorized users (admin or manager) to toggle the locking of voting on a board based on the provided Board_ID.
+
+    :param u: The authorized user with appropriate permissions.
+    :return: JSON response indicating the status of the voting locking toggle or an error message if the operation fails or if the user lacks the necessary permissions.
+    """
+    data = request.get_json()
+
+    if "board_id" not in data:
+        return jsonify({"error": "Missing 'board_id' in the request data."}), 400
+
+    board_id = data["board_id"]
+
+    # Check if the board exists
+    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+
+    if board is None:
+        return jsonify({"error": f"Board with ID {board_id} not found."}), 404
+
+    # Check if the user has the required permissions for this group
+    permissions = session_instance.query(Permissions).filter(
+        Permissions.User_ID == u.User_ID,
+        Permissions.Group_ID == board.Group_ID,
+        Permissions.Permission_Level >= 2,  # Modify this level as needed
+    ).first()
+
+    if not permissions:
+        return jsonify({"error": "You don't have the necessary permissions to toggle voting locking for this board."}), 403
+
+    # Toggle voting locking
+    board.isVotingLocked = not board.isVotingLocked
+    session_instance.commit()
+
+    return jsonify({"message": f"Voting locking for board {board_id} has been toggled."}), 200
+
+
+@api.route("/getVotingLockStatus", methods=["GET"])
+def getVotingLockStatus():
+    """
+    Retrieve the voting locking status for a board via a GET request.
+
+    This function allows users to retrieve the current voting locking status for a board based on the provided Board_ID.
+
+    :return: JSON response containing the current voting locking status for the board or an error message if the board is not found.
+    """
+    board_id = request.args.get("board_id")
+
+    if not board_id:
+        return jsonify({"error": "Missing 'board_id' in the query parameters."}), 400
+
+    # Check if the board exists
+    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+
+    if board is None:
+        return jsonify({"error": f"Board with ID {board_id} not found."}), 404
+
+    return jsonify({"is_voting_locked": board.isVotingLocked}), 200
+
+
 @socketio.on("my_event")
 def handle_my_event(data):
     """

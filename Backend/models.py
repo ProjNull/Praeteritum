@@ -39,6 +39,7 @@ class Boards(Base):
     Phase = Column(Integer, nullable=False)
     RevealPosts = Column(Boolean, nullable=False)
     isLocked = Column(Boolean, nullable=False)
+    isVotingLocked = Column(Boolean, nullable=False, default=False)
 
 class Questions(Base):
     __tablename__ = "QuestionsModel"
