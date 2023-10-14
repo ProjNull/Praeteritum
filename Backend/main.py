@@ -1065,7 +1065,7 @@ def get_feedback(u: Users):
             return jsonify({"message": "There is no such feedback!"})
         q = (
             session_instance.query(Questions)
-            .filter_by(Question_ID=f.Question_ID)
+            .filter_by(Questions_ID=f.Question_ID)
             .first()
         )
         if not q:
@@ -1106,7 +1106,7 @@ def get_many_feedbacks(u: Users):
                 }
             )
         f = session_instance.query(Feedbacks).filter_by(
-            Question_ID=question_id).all()
+            Questions_ID=question_id).all()
         if not f:
             return jsonify({"message": "There are no feedbacks on this board!"})
         feedbacks = [{"id": fIns.Board_ID, "content": fIns.Content}
