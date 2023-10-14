@@ -2,21 +2,13 @@
 from datetime import datetime, timedelta
 from functools import wraps
 
-
 import jwt
-
-
 from database import Session, func
-from models import Groups, Permissions, Users, Boards
-
-
 from flask import Flask, json, jsonify, request, session
 from flask_socketio import SocketIO
-
-
+from models import Boards, Groups, Permissions, Users
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
-
 
 SECRET_KEY = "Praeteritum-CHANGE-ME-TO-SOMETHING-RANDOM"
 
@@ -185,9 +177,7 @@ def register():
                 }
             )
     # If not POST
-    return jsonify(
-        {"message": "This endpoint only supports POST requests for registration."}
-    )
+    return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/login", methods=["POST"])
@@ -218,9 +208,7 @@ def login():
             session_instance.close()
             return jsonify({"message": "Incorrect email or password!"})
     else:
-        return jsonify(
-            {"message": "This endpoint only supports POST requests for registration."}
-        )
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/permission/get/", methods=["POST"])
@@ -254,9 +242,7 @@ def perm_get():
             }
         )
     else:
-        return jsonify(
-            {"message": "This endpoint only supports POST requests for registration."}
-        )
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/permission/create/", methods=["POST"])
@@ -300,9 +286,7 @@ def perm_create():
             {"message": "Created a new permission link", "permid": r.Permission_ID}
         )
     else:
-        return jsonify(
-            {"message": "This endpoint only supports POST requests for registration."}
-        )
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/permission/delete/", methods=["POST"])
@@ -323,9 +307,7 @@ def perm_delete():
         session_instance.delete(q)
         return jsonify({"message": "Permission link destroyed"})
     else:
-        return jsonify(
-            {"message": "This endpoint only supports POST requests for registration."}
-        )
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/permission/update/", methods=["POST"])
@@ -360,9 +342,7 @@ def perm_update():
             {"message": "Permission link updated with the new permission level."}
         )
     else:
-        return jsonify(
-            {"message": "This endpoint only supports POST requests for registration."}
-        )
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/permission/users_in", methods=["POST"])
@@ -403,9 +383,7 @@ def perm_group_users():
             }
         )
     else:
-        return jsonify(
-            {"message": "This endpoint only supports POST requests for registration."}
-        )
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/permission/groups_of", methods=["POST"])
@@ -446,9 +424,7 @@ def perm_user_groups():
             }
         )
     else:
-        return jsonify(
-            {"message": "This endpoint only supports POST requests for registration."}
-        )
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/addGroup", methods=["post"])
@@ -514,6 +490,35 @@ def listGroups():
         return groups
 
 
+@api.route("/board/create/", methods=["POST"])
+def board_create():
+    if request.method == "POST":
+        boardname = request.json.get("BoardName")
+        description = request.json.get("Description")
+        Group_ID = request.json.get("Group_ID")
+        RevealPosts = request.json.get("Anon", False)
+        if None in [boardname, description, Group_ID]:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["BoardName", "Description", "Group_ID"],
+                }
+            )
+        b = Boards(
+            BoardName=boardname,
+            Description=description,
+            Group_ID=Group_ID,
+            Phase=0,
+            RevealPosts=RevealPosts,
+            isLocked=False,
+        )
+        session_instance.add(b)
+        session_instance.commit()
+        return jsonify({"message": "Board created", "boardid": b.Board_ID})
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
+
+
 @api.route("/changePhase", methods=["POST"])
 @requires_authorization
 def changePhase(u: Users):
@@ -529,30 +534,50 @@ def changePhase(u: Users):
     data = request.get_json()
 
     if "board_id" not in data or "new_phase" not in data:
-        return jsonify({"error": "Missing 'board_id' or 'new_phase' in the request data."}), 400
+        return (
+            jsonify(
+                {"error": "Missing 'board_id' or 'new_phase' in the request data."}
+            ),
+            400,
+        )
 
     board_id = data["board_id"]
     new_phase = data["new_phase"]
 
     # Check if the board exists
-    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+    board = session_instance.query(Boards).filter(
+        Boards.Board_ID == board_id).first()
 
     if board is None:
         return jsonify({"error": f"Board with ID {board_id} not found."}), 404
 
     # Check if the user has the required permissions for this group
-    permissions = session_instance.query(Permissions).filter(
-        Permissions.User_ID == u.User_ID,
-        Permissions.Group_ID == board.Group_ID,
-        Permissions.Permission_Level >= 2,  # Modify this level as needed
-    ).first()
+    permissions = (
+        session_instance.query(Permissions)
+        .filter(
+            Permissions.User_ID == u.User_ID,
+            Permissions.Group_ID == board.Group_ID,
+            Permissions.Permission_Level >= 2,  # Modify this level as needed
+        )
+        .first()
+    )
 
     if not permissions:
-        return jsonify({"error": "You don't have the necessary permissions to change the phase of this board."}), 403
+        return (
+            jsonify(
+                {
+                    "error": "You don't have the necessary permissions to change the phase of this board."
+                }
+            ),
+            403,
+        )
 
     # Verify that the new phase is different from the current phase
     if board.Phase == new_phase:
-        return jsonify({"error": "The new phase is the same as the current phase."}), 400
+        return (
+            jsonify({"error": "The new phase is the same as the current phase."}),
+            400,
+        )
 
     # Ensure that the new phase is 1, 2, or 3
     if new_phase not in [1, 2, 3]:
