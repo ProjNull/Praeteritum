@@ -609,26 +609,42 @@ def togglePostVisibility(u: Users):
     board_id = data["board_id"]
 
     # Check if the board exists
-    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+    board = session_instance.query(Boards).filter(
+        Boards.Board_ID == board_id).first()
 
     if board is None:
         return jsonify({"error": f"Board with ID {board_id} not found."}), 404
 
     # Check if the user has the required permissions for this group
-    permissions = session_instance.query(Permissions).filter(
-        Permissions.User_ID == u.User_ID,
-        Permissions.Group_ID == board.Group_ID,
-        Permissions.Permission_Level >= 2,  # Modify this level as needed
-    ).first()
+    permissions = (
+        session_instance.query(Permissions)
+        .filter(
+            Permissions.User_ID == u.User_ID,
+            Permissions.Group_ID == board.Group_ID,
+            Permissions.Permission_Level >= 2,  # Modify this level as needed
+        )
+        .first()
+    )
 
     if not permissions:
-        return jsonify({"error": "You don't have the necessary permissions to toggle post visibility for this board."}), 403
+        return (
+            jsonify(
+                {
+                    "error": "You don't have the necessary permissions to toggle post visibility for this board."
+                }
+            ),
+            403,
+        )
 
     # Toggle post visibility
     board.RevealPosts = not board.RevealPosts
     session_instance.commit()
 
-    return jsonify({"message": f"Post visibility for board {board_id} has been toggled."}), 200
+    return (
+        jsonify(
+            {"message": f"Post visibility for board {board_id} has been toggled."}),
+        200,
+    )
 
 
 @api.route("/getPostVisibility", methods=["GET"])
@@ -646,7 +662,8 @@ def getPostVisibility():
         return jsonify({"error": "Missing 'board_id' in the query parameters."}), 400
 
     # Check if the board exists
-    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+    board = session_instance.query(Boards).filter(
+        Boards.Board_ID == board_id).first()
 
     if board is None:
         return jsonify({"error": f"Board with ID {board_id} not found."}), 404
@@ -673,26 +690,41 @@ def toggleBoardLock(u: Users):
     board_id = data["board_id"]
 
     # Check if the board exists
-    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+    board = session_instance.query(Boards).filter(
+        Boards.Board_ID == board_id).first()
 
     if board is None:
         return jsonify({"error": f"Board with ID {board_id} not found."}), 404
 
     # Check if the user has the required permissions for this group
-    permissions = session_instance.query(Permissions).filter(
-        Permissions.User_ID == u.User_ID,
-        Permissions.Group_ID == board.Group_ID,
-        Permissions.Permission_Level >= 2,  # Modify this level as needed
-    ).first()
+    permissions = (
+        session_instance.query(Permissions)
+        .filter(
+            Permissions.User_ID == u.User_ID,
+            Permissions.Group_ID == board.Group_ID,
+            Permissions.Permission_Level >= 2,  # Modify this level as needed
+        )
+        .first()
+    )
 
     if not permissions:
-        return jsonify({"error": "You don't have the necessary permissions to toggle board locking for this board."}), 403
+        return (
+            jsonify(
+                {
+                    "error": "You don't have the necessary permissions to toggle board locking for this board."
+                }
+            ),
+            403,
+        )
 
     # Toggle board locking
     board.isLocked = not board.isLocked
     session_instance.commit()
 
-    return jsonify({"message": f"Board locking for board {board_id} has been toggled."}), 200
+    return (
+        jsonify({"message": f"Board locking for board {board_id} has been toggled."}),
+        200,
+    )
 
 
 @api.route("/getBoardLockStatus", methods=["GET"])
@@ -710,7 +742,8 @@ def getBoardLockStatus():
         return jsonify({"error": "Missing 'board_id' in the query parameters."}), 400
 
     # Check if the board exists
-    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+    board = session_instance.query(Boards).filter(
+        Boards.Board_ID == board_id).first()
 
     if board is None:
         return jsonify({"error": f"Board with ID {board_id} not found."}), 404
@@ -737,26 +770,42 @@ def toggleVotingLock(u: Users):
     board_id = data["board_id"]
 
     # Check if the board exists
-    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+    board = session_instance.query(Boards).filter(
+        Boards.Board_ID == board_id).first()
 
     if board is None:
         return jsonify({"error": f"Board with ID {board_id} not found."}), 404
 
     # Check if the user has the required permissions for this group
-    permissions = session_instance.query(Permissions).filter(
-        Permissions.User_ID == u.User_ID,
-        Permissions.Group_ID == board.Group_ID,
-        Permissions.Permission_Level >= 2,  # Modify this level as needed
-    ).first()
+    permissions = (
+        session_instance.query(Permissions)
+        .filter(
+            Permissions.User_ID == u.User_ID,
+            Permissions.Group_ID == board.Group_ID,
+            Permissions.Permission_Level >= 2,  # Modify this level as needed
+        )
+        .first()
+    )
 
     if not permissions:
-        return jsonify({"error": "You don't have the necessary permissions to toggle voting locking for this board."}), 403
+        return (
+            jsonify(
+                {
+                    "error": "You don't have the necessary permissions to toggle voting locking for this board."
+                }
+            ),
+            403,
+        )
 
     # Toggle voting locking
     board.isVotingLocked = not board.isVotingLocked
     session_instance.commit()
 
-    return jsonify({"message": f"Voting locking for board {board_id} has been toggled."}), 200
+    return (
+        jsonify(
+            {"message": f"Voting locking for board {board_id} has been toggled."}),
+        200,
+    )
 
 
 @api.route("/getVotingLockStatus", methods=["GET"])
@@ -774,7 +823,8 @@ def getVotingLockStatus():
         return jsonify({"error": "Missing 'board_id' in the query parameters."}), 400
 
     # Check if the board exists
-    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+    board = session_instance.query(Boards).filter(
+        Boards.Board_ID == board_id).first()
 
     if board is None:
         return jsonify({"error": f"Board with ID {board_id} not found."}), 404
