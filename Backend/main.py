@@ -6,7 +6,7 @@ import jwt
 from database import Session, func
 from flask import Flask, json, jsonify, request, session
 from flask_socketio import SocketIO
-from models import Users
+from models import Users, Groups, Boards, Permissions, Questions, Feedback, Reaction
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -48,6 +48,7 @@ def add_header(response):
     :param response: The Flask response object.
     """
     response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "content-type"
     return response
 
 
@@ -208,6 +209,50 @@ def login():
         return jsonify(
             {"message": "This endpoint only supports POST requests for registration."}
         )
+
+
+@api.route("/addGroup", methods=["post"])
+def addGroup():
+    if request.method == "POST":
+        GroupName = request.json["GroupName"]
+        Description = request.json["Description"]
+
+        Group_obj = session_instance.query(Groups).filter_by(GroupName=GroupName)
+
+        if GroupName not in Group_obj:
+            GroupToCommit = Groups(
+                GroupName=GroupName, 
+                Description=Description
+            )
+            session_instance.add(GroupToCommit)
+            return jsonify("Group created")
+        return jsonify("You shouldn't get this response")
+    return jsonify("Wrong request")
+
+
+@api.route("/removeGroup", methods=["DELETE"])
+@requires_authorization
+def removeGroup(u: Users):
+    if request.method == "DELETE":
+        groupToDelete = request.json.get("Group_ID")
+        perms = session_instance.query(Permissions).filter_by(User_ID=u.User_ID, Group_ID=groupToDelete, Permissions_Level=3)
+        if not perms:
+            return jsonify("Fuck off")
+        group_obj = session_instance.query(Groups).filter_by(Group_ID=groupToDelete)
+        session_instance.delete(group_obj)
+        return jsonify("Group deleted")
+    return jsonify("Wrong request")
+
+
+@api.route("/listGroups", methods=["GET"])
+def listGroups():
+    if request.method == "GET":
+        group_obj = session_instance.query(Groups).all()
+        i = []
+        for group in group_obj.filter_by(Group_ID=group):
+            item = [group.Group_ID, group.Group_Name]
+            i.append(item)
+        return i
 
 
 @socketio.on("my_event")

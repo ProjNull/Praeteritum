@@ -12,12 +12,13 @@ class Users(Base):
     Email = Column(String, nullable=False)
     Password = Column(String, nullable=False)
     Description = Column(String, nullable=True)
+    
 
 class Permissions(Base):
     __tablename__ = "PermissionsModel"
 
     Permission_ID = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
-    Permission_level = Column(Integer, nullable=False, default=0)
+    Permission_Level = Column(Integer, nullable=False, default=0)
     User_ID = Column(Integer, ForeignKey("UsersModel.User_ID"), nullable=False)
     Group_ID = Column(Integer, ForeignKey("GroupsModel.Group_ID"), nullable=False)
 
@@ -25,14 +26,14 @@ class Groups(Base):
     __tablename__ = "GroupsModel"
 
     Group_ID = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
-    Name = Column(String, nullable=False)
+    Group_Name = Column(String, nullable=False)
     Description = Column(String, nullable=True)
 
 class Boards(Base):
     __tablename__ = "BoardsrModel"
 
     Board_ID = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
-    Name = Column(String, nullable=False)
+    BoardName = Column(String, nullable=False)
     Description = Column(String, nullable=True)
     Group_ID = Column(Integer, ForeignKey("GroupsModel.Group_ID"), nullable=False)
 
