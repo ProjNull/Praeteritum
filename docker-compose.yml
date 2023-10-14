@@ -1,0 +1,12 @@
+version: "3"
+services:
+  be:
+    build: ./Backend
+    ports:
+      - 8002:8002
+  fe:
+    build: ./Frontend/
+    ports:
+      - 8080:5173
+    environment:
+      PUBLIC_API_URL: "http://be:8002"
