@@ -36,6 +36,9 @@ class Boards(Base):
     BoardName = Column(String, nullable=False)
     Description = Column(String, nullable=True)
     Group_ID = Column(Integer, ForeignKey("GroupsModel.Group_ID"), nullable=False)
+    Phase = Column(Integer, nullable=False)
+    RevealPosts = Column(Boolean, nullable=False)
+    isLocked = Column(Boolean, nullable=False)
 
 class Questions(Base):
     __tablename__ = "QuestionsModel"

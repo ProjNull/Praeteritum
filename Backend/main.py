@@ -7,7 +7,7 @@ import jwt
 
 
 from database import Session, func
-from models import Groups, Permissions, Users
+from models import Groups, Permissions, Users, Boards
 
 
 from flask import Flask, json, jsonify, request, session
@@ -512,6 +512,57 @@ def listGroups():
         group_obj = session_instance.query(Groups).all()
         groups = [[group.Group_ID, group.Group_Name] for group in group_obj]
         return groups
+
+
+@api.route("/changePhase", methods=["POST"])
+@requires_authorization
+def changePhase(u: Users):
+    """
+    Change the phase of a board via a POST request.
+
+    This function allows authorized users to change the phase of a board based on the provided Board_ID.
+    It ensures that the user can't set the phase to the same phase, and that the new phase is 1, 2, or 3.
+
+    :param u: The authorized user with appropriate permissions.
+    :return: JSON response indicating the status of the phase change or an error message if the operation fails or if the user lacks the necessary permissions.
+    """
+    data = request.get_json()
+
+    if "board_id" not in data or "new_phase" not in data:
+        return jsonify({"error": "Missing 'board_id' or 'new_phase' in the request data."}), 400
+
+    board_id = data["board_id"]
+    new_phase = data["new_phase"]
+
+    # Check if the board exists
+    board = session_instance.query(Boards).filter(Boards.Board_ID == board_id).first()
+
+    if board is None:
+        return jsonify({"error": f"Board with ID {board_id} not found."}), 404
+
+    # Check if the user has the required permissions for this group
+    permissions = session_instance.query(Permissions).filter(
+        Permissions.User_ID == u.User_ID,
+        Permissions.Group_ID == board.Group_ID,
+        Permissions.Permission_Level >= 2,  # Modify this level as needed
+    ).first()
+
+    if not permissions:
+        return jsonify({"error": "You don't have the necessary permissions to change the phase of this board."}), 403
+
+    # Verify that the new phase is different from the current phase
+    if board.Phase == new_phase:
+        return jsonify({"error": "The new phase is the same as the current phase."}), 400
+
+    # Ensure that the new phase is 1, 2, or 3
+    if new_phase not in [1, 2, 3]:
+        return jsonify({"error": "Invalid phase. Phase must be 1, 2, or 3."}), 400
+
+    # Update the board's phase
+    board.Phase = new_phase
+    session_instance.commit()
+
+    return jsonify({"message": "Board phase changed successfully."}), 200
 
 
 @socketio.on("my_event")
