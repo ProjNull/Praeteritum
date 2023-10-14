@@ -25,6 +25,10 @@ session_instance = Session()
 
 
 def make_dummy_data():
+    q = session_instance.query(Users).filter_by(
+        Email="admin@example.com").first()
+    if q:
+        return
     u1 = Users(Name="Admin Admin", Email="admin@example.com", Password="admin")
     u2 = Users(Name="Script Inane",
                Email="script@example.com", Password="script")
