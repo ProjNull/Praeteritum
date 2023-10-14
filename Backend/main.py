@@ -535,7 +535,8 @@ def listGroups():
     """
     if request.method == "POST":
         group_obj = session_instance.query(Groups).all()
-        groups = [[group.Group_ID, group.Group_Name] for group in group_obj]
+        groups = [{"id": group.Group_ID, "name": group.Group_Name,
+                   "desc": group.Description} for group in group_obj]
         return groups
 
 
@@ -635,7 +636,8 @@ def board_fetch_many():
             Group_ID=group_id, Phase=phase).all()
         if not b:
             return jsonify({"message": "There are no boards in this group!"})
-        boards = [[bIns.Board_ID, bIns.BoardName] for bIns in b]
+        boards = [{"id": bIns.Board_ID, "name": bIns.BoardName,
+                   "group": bIns.Group_ID} for bIns in b]
         return jsonify({"message": f"{len(boards)} boards fetched!", "boards": boards})
     else:
         return jsonify({"message": "This endpoint only supports POST requests!"})
