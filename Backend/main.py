@@ -519,7 +519,7 @@ def board_create():
         return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
-@api.route("deleteBoard", methods=["POST"])
+@api.route("/deleteBoard", methods=["POST"])
 def board_delete():
     if request.method == "POST":
         board_id = request.json.get("Board_ID")
