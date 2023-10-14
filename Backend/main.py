@@ -6,8 +6,9 @@ import jwt
 from database import Session, func
 from flask import Flask, json, jsonify, request, session
 from flask_socketio import SocketIO
-from models import Boards, Groups, Permissions, Questions, Users, Reaction
+from models import Boards
 from models import Feedback as Feedbacks
+from models import Groups, Permissions, Questions, Reaction, Users
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -30,7 +31,8 @@ def make_dummy_data():
         Email="admin@example.com").first()
     if q:
         return
-    u1 = Users(Name="Admin Admin", Email="admin@example.com", Password="adminadmin")
+    u1 = Users(Name="Admin Admin", Email="admin@example.com",
+               Password="adminadmin")
     u2 = Users(Name="Script Inane",
                Email="script@example.com", Password="script")
     session_instance.add(u1)
@@ -536,8 +538,10 @@ def listGroups():
     """
     if request.method == "POST":
         group_obj = session_instance.query(Groups).all()
-        groups = [{"id": group.Group_ID, "name": group.Group_Name,
-                   "desc": group.Description} for group in group_obj]
+        groups = [
+            {"id": group.Group_ID, "name": group.Group_Name, "desc": group.Description}
+            for group in group_obj
+        ]
         return groups
 
 
@@ -633,12 +637,17 @@ def board_fetch_many():
                     "required_fields": ["Group_ID", "Phase"],
                 }
             )
-        b = session_instance.query(Boards).filter_by(
-            Group_ID=group_id, Phase=phase).all()
+        b = (
+            session_instance.query(Boards)
+            .filter_by(Group_ID=group_id, Phase=phase)
+            .all()
+        )
         if not b:
             return jsonify({"message": "There are no boards in this group!"})
-        boards = [{"id": bIns.Board_ID, "name": bIns.BoardName,
-                   "group": bIns.Group_ID} for bIns in b]
+        boards = [
+            {"id": bIns.Board_ID, "name": bIns.BoardName, "group": bIns.Group_ID}
+            for bIns in b
+        ]
         return jsonify({"message": f"{len(boards)} boards fetched!", "boards": boards})
     else:
         return jsonify({"message": "This endpoint only supports POST requests!"})
@@ -980,7 +989,7 @@ def send_feedback(u: Users):
             User_ID=u.User_ID,
             Questions_ID=question_id,
             Content=content,
-            ColumnName=column
+            ColumnName=column,
         )
         session_instance.add(f)
         session_instance.commit()
@@ -1023,26 +1032,36 @@ def update_feedback(u: Users):
 def get_feedback(u: Users):
     if request.method == "POST":
         fid = request.json.get("Feedback_ID")
-        f = session_instance.query(Feedbacks).filter_by(Feedback_ID=fid).first()
+        f = session_instance.query(Feedbacks).filter_by(
+            Feedback_ID=fid).first()
         if not f:
             return jsonify({"message": "There is no such feedback!"})
-        q = session_instance.query(Questions).filter_by(
-            Question_ID=f.Question_ID).first()
+        q = (
+            session_instance.query(Questions)
+            .filter_by(Question_ID=f.Question_ID)
+            .first()
+        )
         if not q:
-            return jsonify({"message": "There is no such question - Invalid feedback entry!"})
+            return jsonify(
+                {"message": "There is no such question - Invalid feedback entry!"}
+            )
         b = session_instance.query(Boards).filter_by(
             Board_ID=q.Board_ID).first()
         if not b:
-            return jsonify({"message": "There is no such board - Invalid feedback and question entries!"})
-        return jsonify(
+            return jsonify(
                 {
-                    "message": "Found the specified feedback", 
-                    "content": f.Content, 
-                    "column": f.ColumnName, 
-                    "question_id": f.Questions_ID, 
-                    "author": f.User_ID if b.RevealPosts else None
-                 }
-                )
+                    "message": "There is no such board - Invalid feedback and question entries!"
+                }
+            )
+        return jsonify(
+            {
+                "message": "Found the specified feedback",
+                "content": f.Content,
+                "column": f.ColumnName,
+                "question_id": f.Questions_ID,
+                "author": f.User_ID if b.RevealPosts else None,
+            }
+        )
     else:
         return jsonify({"message": "This endpoint only supports POST requests!"})
 
@@ -1065,7 +1084,10 @@ def get_many_feedbacks(u: Users):
             return jsonify({"message": "There are no feedbacks on this board!"})
         feedbacks = [{"id": fIns.Board_ID, "content": fIns.Content}
                      for fIns in f]
-        return jsonify({"message": f"{len(feedbacks)} feedbacks fetched!", "feedbacks": feedbacks})
+        return jsonify(
+            {"message": f"{len(feedbacks)} feedbacks fetched!",
+             "feedbacks": feedbacks}
+        )
     else:
         return jsonify({"message": "This endpoint only supports POST requests!"})
 
@@ -1099,12 +1121,50 @@ def upvote(u: Users):
     if request.method == "POST":
         fid = request.json.get("Feedback_ID")
         if fid:
+            rc = (
+                session_instance.query(Reaction)
+                .filter_by(Feedback_ID=fid, User_ID=u.User_ID)
+                .first()
+            )
+            if rc:
+                return jsonify(
+                    {
+                        "message": "You have already posted your upvote on the specified feedback"
+                    }
+                )
             r_obj = Reaction(Feedback_ID=fid, User_ID=u.User_ID)
             session_instance.add(r_obj)
             session_instance.commit()
-            return jsonify("Upvoted successfully")
-        return jsonify("I did not work")
-    return jsonify("I did not work")
+            return jsonify(
+                {"message": "Successfully posted your upvote on the specified feedback"}
+            )
+        else:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["Feedback_ID"],
+                }
+            )
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
+
+
+@api.route("/upvotes_on", methods=["POST"])
+def get_votes(u: Users):
+    if request.method == "POST":
+        fid = request.json.get("Feedback_ID")
+        if not fid:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["Feedback_ID"],
+                }
+            )
+        r = len(session_instance.query(
+            Feedbacks).filter_by(Feedback_ID=fid).all())
+        return jsonify({"message": f"Fetched upvotes for {fid}", "upvotes": r})
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/unupvote", methods=["POST"])
@@ -1113,14 +1173,46 @@ def unupvote(u: Users):
     if request.method == "POST":
         fid = request.json.get("Feedback_ID")
         if fid:
-            r = session_instance.query(Reaction).filter_by(Feedback_ID=fid, User_ID=u.User_ID).first()
+            r = (
+                session_instance.query(Reaction)
+                .filter_by(Feedback_ID=fid, User_ID=u.User_ID)
+                .first()
+            )
             if not r:
-                return jsonify(f"No upvote found for user {u.User_ID} for the feedback {Feedback_ID}")
+                return jsonify(
+                    {"message": "You do not have an upvote on the specified feedback"}
+                )
             session_instance.delete(r)
             session_instance.commit()
-            return jsonify("Unununpvoted your ununupvote")
-        return jsonify("I did not work")
-    return jsonify("I did not work")
+            return jsonify(
+                {"message": "You have voided your upvote on the specified feedback"}
+            )
+        else:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["Feedback_ID"],
+                }
+            )
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
+
+
+@api.route("/profile/<int:userid>", methods=["GET"])
+@requires_authorization
+def get_profile(userid: int):
+    u = session_instance.query(Users).filter_by(User_ID=userid).first()
+    if not u:
+        return jsonify({"message": "User not found!", "user": None})
+    return jsonify(
+        {
+            "message": "User not found!",
+            "user": {
+                "userid": u.User_ID,
+                "displayname": u.Name,
+            },
+        }
+    )
 
 
 @socketio.on("my_event")
