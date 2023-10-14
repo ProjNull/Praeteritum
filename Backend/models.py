@@ -64,7 +64,7 @@ class Questions(Base):
     Content = Column(String, nullable=False)
     # Description = Column(String, nullable=True)
     Columns = Column(String, nullable=False)
-    Mandantory = Column(Boolean, nullable=False)
+    Mandantory = Column(Boolean, nullable=False, default=False)
     Board_ID = Column(Integer, ForeignKey(
         "BoardsrModel.Board_ID"), nullable=False)
 

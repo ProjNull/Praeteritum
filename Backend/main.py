@@ -129,7 +129,7 @@ def add_header(response):
     :param response: The Flask response object.
     """
     response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "content-type"
+    response.headers["Access-Control-Allow-Headers"] = "content-type, authorization"
     return response
 
 
