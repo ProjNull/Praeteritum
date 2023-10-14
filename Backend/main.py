@@ -85,7 +85,6 @@ def make_dummy_data():
     session_instance.commit()
     q1 = Questions(
         Content="How do you rate your experience?",
-        Description="Try to write both a positive and a negative.",
         Columns="Positive,Negative",
         Board_ID=b1.Board_ID,
     )
@@ -93,6 +92,7 @@ def make_dummy_data():
         Content="Another example question",
         Columns="Positive,Neutral,Negative",
         Board_ID=b1.Board_ID,
+        Mandantory=True
     )
     session_instance.add(q1)
     session_instance.add(q2)
@@ -1237,9 +1237,83 @@ def get_profile(userid: int):
             "user": {
                 "userid": u.User_ID,
                 "displayname": u.Name,
+                "email": u.Email,
             },
         }
     )
+
+
+@api.route("/question/add/<boardid>", methods=["POST"])
+@requires_authorization
+def add_question(u: Users, boardid: int):
+    b = session_instance.query(Boards).filter_by(Board_ID=boardid).first()
+    if not b:
+        return {"message": f"Board with the ID {boardid} does not exist."}
+    con = request.json.get("content")
+    col = request.json.get("columns")
+    req = request.json.get("required", False)
+    if None in [con, col]:
+        return {
+            "message": "You must provide the required fields!",
+            "required_fields": ["Feedback_ID"],
+        }
+    q = Questions(Content=con, Columns=col, Mandantory=req, Board_ID=boardid)
+    session_instance.add(q)
+    session_instance.commit()
+    return {"message": f"Created question {q.Questions_ID}", "questionid": q.Questions_ID}
+
+
+@api.route("/question/remove/<int:questionid>", methods=["POST"])
+@requires_authorization
+def rm_question(u: Users,questionid: int):
+    qq = session_instance.query(Questions).filter_by(
+            Questions_ID=questionid
+            ).first()
+    if not qq:
+        return {"message": "Question does not exist!"}
+    session_instance.delete(qq)
+    session_instance.commit()
+    return {"message": "Deleted specified question!"}
+
+
+@api.route("/questions_for/<int:boardid>", methods=["GET"])
+@requires_authorization
+def get_questions(u: Users,boardid: int):
+    b = session_instance.query(Boards).filter_by(Board_ID=boardid).first()
+    if not b:
+        return {"message": f"Board with the ID {boardid} does not exist."}
+    qq = session_instance.query(Questions).filter_by(Board_ID=boardid).all()
+    questions = [
+            {
+                "text": q.Content,
+                "cols": q.Columns.split(","),
+                "required": q.Mandantory
+             } for q in qq
+            ]
+    return {
+            "message": f"Found all questions for {boardid}",
+            "questions": questions
+            }
+
+
+@api.route("/question/<int:n>/for/<int:boardid>", methods=["GET"])
+@requires_authorization
+def get_question_n(u: Users, n: int, boardid: int):
+    b = session_instance.query(Boards).filter_by(Board_ID=boardid).first()
+    if not b:
+        return {"message": f"Board with the ID {boardid} does not exist."}
+    qq = session_instance.query(Questions).filter_by(Board_ID=boardid).all()
+    questions = [
+            {
+                "text": q.Content,
+                "cols": q.Columns.split(","),
+                "required": q.Mandantory
+             } for q in qq
+            ]
+    return {
+            "message": f"Found requested question from {boardid}",
+            **questions[n % len(questions)]
+            }
 
 
 @socketio.on("my_event")
