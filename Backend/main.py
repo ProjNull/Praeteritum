@@ -1102,7 +1102,23 @@ def upvote(u: Users):
             r_obj = Reaction(Feedback_ID=fid, User_ID=u.User_ID)
             session_instance.add(r_obj)
             session_instance.commit()
-            return jsonify("I worked")
+            return jsonify("Upvoted successfully")
+        return jsonify("I did not work")
+    return jsonify("I did not work")
+
+
+@api.route("/unupvote", methods=["POST"])
+@requires_authorization
+def unupvote(u: Users):
+    if request.method == "POST":
+        fid = request.json.get("Feedback_ID")
+        if fid:
+            r = session_instance.query(Reaction).filter_by(Feedback_ID=fid, User_ID=u.User_ID).first()
+            if not r:
+                return jsonify(f"No upvote found for user {u.User_ID} for the feedback {Feedback_ID}")
+            session_instance.delete(r)
+            session_instance.commit()
+            return jsonify("Unununpvoted your ununupvote")
         return jsonify("I did not work")
     return jsonify("I did not work")
 
