@@ -6,7 +6,7 @@ import jwt
 from database import Session, func
 from flask import Flask, json, jsonify, request, session
 from flask_socketio import SocketIO
-from models import Boards, Groups, Permissions, Users
+from models import Boards, Groups, Permissions, Questions, Users
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -22,6 +22,50 @@ socketio.init_app(api, cors_allowed_origins="*")
 
 
 session_instance = Session()
+
+
+def make_dummy_data():
+    u1 = Users(Name="Admin Admin", Email="admin@example.com", Password="admin")
+    u2 = Users(Name="Script Inane",
+               Email="script@example.com", Password="script")
+    session_instance.add(u1)
+    session_instance.add(u2)
+    g1 = Groups(Group_Name="Class 2.I", Description="2023/2024")
+    session_instance.add(g1)
+    session_instance.commit()
+    p1 = Permissions(Permission_Level=3, User_ID=u1.User_ID,
+                     Group_ID=g1.Group_ID)
+    p2 = Permissions(Permission_Level=1, User_ID=u2.User_ID,
+                     Group_ID=g1.Group_ID)
+    session_instance.add(p1)
+    session_instance.add(p2)
+    b1 = Boards(
+        BoardName="Untitled Board",
+        Group_ID=g1.Group_ID,
+        Phase=0,
+        RevealPosts=True,
+        isLocked=False,
+        isVotingLocked=False,
+    )
+    session_instance.add(b1)
+    session_instance.commit()
+    q1 = Questions(
+        Content="How do you rate your experience?",
+        Description="Try to write both a positive and a negative.",
+        Columns="Positive,Negative",
+        Board_ID=b1.Board_ID,
+    )
+    q2 = Questions(
+        Content="Another example question",
+        Columns="Positive,Neutral,Negative",
+        Board_ID=b1.Board_ID,
+    )
+    session_instance.add(q1)
+    session_instance.add(q2)
+    session_instance.commit()
+
+
+make_dummy_data()
 
 
 @api.errorhandler(HTTPException)
