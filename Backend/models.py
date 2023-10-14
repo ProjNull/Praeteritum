@@ -12,7 +12,7 @@ class Users(Base):
         Integer, nullable=False, unique=True, primary_key=True, autoincrement=True
     )
     Name = Column(String, nullable=False)
-    Email = Column(String, nullable=False)
+    Email = Column(String, nullable=False, unique=True)
     Password = Column(String, nullable=False)
     Description = Column(String, nullable=True)
 
