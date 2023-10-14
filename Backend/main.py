@@ -614,6 +614,28 @@ def board_get():
         return jsonify({"message": "This endpoint only supports GET requests!"})
 
 
+@api.route("/fetchBoards", methods=["GET"])
+def board_fetch_many():
+    if request.method == "GET":
+        group_id = request.json.get("Group_ID")
+        phase = request.json.get("Phase", 0)
+        if None in [group_id, phase]:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["Group_ID", "Phase"],
+                }
+            )
+        b = session_instance.query(Boards).filter_by(
+            Group_ID=group_id, Phase=phase).all()
+        if not b:
+            return jsonify({"message": "A board with this ID does not exist!"})
+        boards = [[bIns.Board_ID, bIns.BoardName] for bIns in b]
+        return jsonify({"message": f"{len(boards)} boards fetched!", "boards": boards})
+    else:
+        return jsonify({"message": "This endpoint only supports GET requests!"})
+
+
 @api.route("/changePhase", methods=["POST"])
 @requires_authorization
 def changePhase(u: Users):
