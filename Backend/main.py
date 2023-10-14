@@ -7,6 +7,7 @@ from database import Session, func
 from flask import Flask, json, jsonify, request, session
 from flask_socketio import SocketIO
 from models import Boards, Groups, Permissions, Questions, Users
+from models import Feedback as Feedbacks
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -523,16 +524,16 @@ def removeGroup(u: Users):
     return jsonify("Wrong request")
 
 
-@api.route("/listGroups", methods=["GET"])
+@api.route("/listGroups", methods=["POST"])
 def listGroups():
     """
-    Retrieve a list of groups via a GET request.
+    Retrieve a list of groups via a POST request.
 
     This function allows you to retrieve a list of all available groups.
 
     :return: JSON response containing a list of groups, where each group is represented as a list containing its Group_ID and Group_Name.
     """
-    if request.method == "GET":
+    if request.method == "POST":
         group_obj = session_instance.query(Groups).all()
         groups = [[group.Group_ID, group.Group_Name] for group in group_obj]
         return groups
@@ -588,9 +589,9 @@ def board_delete():
         return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
-@api.route("/getBoard", methods=["GET"])
+@api.route("/getBoard", methods=["POST"])
 def board_get():
-    if request.method == "GET":
+    if request.method == "POST":
         board_id = request.json.get("Board_ID")
         if not board_id:
             return jsonify(
@@ -615,12 +616,12 @@ def board_get():
             }
         )
     else:
-        return jsonify({"message": "This endpoint only supports GET requests!"})
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
-@api.route("/fetchBoards", methods=["GET"])
+@api.route("/fetchBoards", methods=["POST"])
 def board_fetch_many():
-    if request.method == "GET":
+    if request.method == "POST":
         group_id = request.json.get("Group_ID")
         phase = request.json.get("Phase", 0)
         if None in [group_id, phase]:
@@ -637,7 +638,7 @@ def board_fetch_many():
         boards = [[bIns.Board_ID, bIns.BoardName] for bIns in b]
         return jsonify({"message": f"{len(boards)} boards fetched!", "boards": boards})
     else:
-        return jsonify({"message": "This endpoint only supports GET requests!"})
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/changePhase", methods=["POST"])
@@ -768,10 +769,10 @@ def togglePostVisibility(u: Users):
     )
 
 
-@api.route("/getPostVisibility", methods=["GET"])
+@api.route("/getPostVisibility", methods=["POST"])
 def getPostVisibility():
     """
-    Retrieve the post visibility status for a board via a GET request.
+    Retrieve the post visibility status for a board via a POST request.
 
     This function allows users to retrieve the current post visibility status for a board based on the provided Board_ID.
 
@@ -848,10 +849,10 @@ def toggleBoardLock(u: Users):
     )
 
 
-@api.route("/getBoardLockStatus", methods=["GET"])
+@api.route("/getBoardLockStatus", methods=["POST"])
 def getBoardLockStatus():
     """
-    Retrieve the board locking status for a board via a GET request.
+    Retrieve the board locking status for a board via a POST request.
 
     This function allows users to retrieve the current board locking status for a board based on the provided Board_ID.
 
@@ -929,10 +930,10 @@ def toggleVotingLock(u: Users):
     )
 
 
-@api.route("/getVotingLockStatus", methods=["GET"])
+@api.route("/getVotingLockStatus", methods=["POST"])
 def getVotingLockStatus():
     """
-    Retrieve the voting locking status for a board via a GET request.
+    Retrieve the voting locking status for a board via a POST request.
 
     This function allows users to retrieve the current voting locking status for a board based on the provided Board_ID.
 
@@ -951,6 +952,100 @@ def getVotingLockStatus():
         return jsonify({"error": f"Board with ID {board_id} not found."}), 404
 
     return jsonify({"is_voting_locked": board.isVotingLocked}), 200
+
+
+@api.route("/sendFeedback", methods=["POST"])
+@requires_authorization
+def send_feedback(u: Users):
+    """
+    WARNING: This does not verify,
+    whether the user has access to the board,
+    to which the question belongs.
+    """
+    if request.method == "POST":
+        content = request.json.get("Content")
+        column = request.json.get("ColumnName")
+        question_id = request.json.get("Question_ID")
+        if None in [content, column, question_id]:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["Content", "ColumnName", "Question_ID"],
+                }
+            )
+        f = Feedbacks(
+            User_ID=u.User_ID,
+            Questions_ID=question_id,
+            Content=content,
+            ColumnName=column
+        )
+        session_instance.add(f)
+        session_instance.commit()
+        return jsonify({"message": "Feedback created", "feedbackid": f.Feedback_ID})
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
+
+
+@api.route("/updateFeedback", methods=["POST"])
+@requires_authorization
+def update_feedback(u: Users):
+    return jsonify({
+        "message": "Not implemented"
+    })
+
+
+@api.route("/getFeedback", methods=["POST"])
+@requires_authorization
+def get_feedback(u: Users):
+    return jsonify({
+        "message": "Not implemented"
+    })
+
+
+@api.route("/fetchFeedbacks", methods=["POST"])
+@requires_authorization
+def get_many_feedbacks(u: Users):
+    if request.method == "POST":
+        question_id = request.json.get("Question_ID")
+        if not question_id:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["Question_ID"],
+                }
+            )
+        f = session_instance.query(Feedbacks).filter_by(
+            Question_ID=question_id).all()
+        if not f:
+            return jsonify({"message": "There are no feedbacks on this board!"})
+        feedbacks = [{"id": fIns.Board_ID, "content": fIns.Content}
+                     for fIns in f]
+        return jsonify({"message": f"{len(feedbacks)} feedbacks fetched!", "feedbacks": feedbacks})
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
+
+
+@api.route("/deleteFeedback", methods=["POST"])
+@requires_authorization
+def delete_feedback(u: Users):
+    if request.method == "POST":
+        f_id = request.json.get("Feedback_ID")
+        if not f_id:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["Feedback_ID"],
+                }
+            )
+        f = session_instance.query(Feedbacks).filter_by(
+            Feedback_ID=f_id).first()
+        if not f:
+            return jsonify({"message": "There is no such feedback!"})
+        session_instance.delete(f)
+        session_instance.commit()
+        return jsonify({"message": "Feedback deleted!"})
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @socketio.on("my_event")
