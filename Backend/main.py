@@ -2,21 +2,32 @@
 from datetime import datetime, timedelta
 from functools import wraps
 
+
 import jwt
+
+
 from database import Session, func
+from models import Groups, Permissions, Users
+
+
 from flask import Flask, json, jsonify, request, session
 from flask_socketio import SocketIO
-from models import Groups, Permissions, Users
+
+
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
 
+
 SECRET_KEY = "Praeteritum-CHANGE-ME-TO-SOMETHING-RANDOM"
+
 
 api = Flask(__name__)
 api.secret_key = SECRET_KEY
 
+
 socketio = SocketIO(api)
 socketio.init_app(api, cors_allowed_origins="*")
+
 
 session_instance = Session()
 
@@ -214,6 +225,13 @@ def login():
 
 @api.route("/permission/get/", methods=["POST"])
 def perm_get():
+    """
+    Retrieve permission information via a POST request.
+
+    This function allows you to retrieve permission details based on the provided permission ID.
+
+    :return: JSON response containing permission details if found, or an error message if the permission does not exist.
+    """
     if request.method == "POST":
         permid = request.json.get("permid")
         if not permid:
@@ -243,6 +261,13 @@ def perm_get():
 
 @api.route("/permission/create/", methods=["POST"])
 def perm_create():
+    """
+    Create a new permission link via a POST request.
+
+    This function allows you to create a new permission link, associating a user with a group and specifying the permission level.
+
+    :return: JSON response indicating the status of the permission link creation or an error message if the operation fails.
+    """
     if request.method == "POST":
         userid = request.json.get("userid")
         groupid = request.json.get("groupid")
@@ -305,6 +330,13 @@ def perm_delete():
 
 @api.route("/permission/update/", methods=["POST"])
 def perm_update():
+    """
+    Delete a permission link via a POST request.
+
+    This function allows you to delete an existing permission link based on the provided permission ID.
+
+    :return: JSON response indicating the status of the permission link deletion or an error message if the operation fails.
+    """
     if request.method == "POST":
         permid = request.json.get("permid")
         level = request.json.get("level")
@@ -335,6 +367,13 @@ def perm_update():
 
 @api.route("/permission/users_in", methods=["POST"])
 def perm_group_users():
+    """
+    Retrieve users in a specific group via a POST request.
+
+    This function allows you to retrieve a list of users in a specified group with optional pagination.
+
+    :return: JSON response containing the list of users in the group, or an error message if the group has no users or if the operation fails.
+    """
     if request.method == "POST":
         groupid = request.json.get("groupid")
         limit = request.json.get("limit")
@@ -371,6 +410,13 @@ def perm_group_users():
 
 @api.route("/permission/groups_of", methods=["POST"])
 def perm_user_groups():
+    """
+    Retrieve groups associated with a specific user via a POST request.
+
+    This function allows you to retrieve a list of groups that a specified user belongs to with optional pagination.
+
+    :return: JSON response containing the list of groups associated with the user, or an error message if the user is not in any groups or if the operation fails.
+    """
     if request.method == "POST":
         userid = request.json.get("userid")
         limit = request.json.get("limit")
@@ -407,6 +453,13 @@ def perm_user_groups():
 
 @api.route("/addGroup", methods=["post"])
 def addGroup():
+    """
+    Create a new group via a POST request.
+
+    This function allows you to create a new group by providing a group name and a description.
+
+    :return: JSON response indicating the status of the group creation or an error message if the operation fails.
+    """
     if request.method == "POST":
         Group_Name = request.json["Group_Name"]
         Description = request.json["Description"]
@@ -422,6 +475,15 @@ def addGroup():
 @api.route("/removeGroup", methods=["DELETE"])
 @requires_authorization
 def removeGroup(u: Users):
+    """
+    Remove a group via a DELETE request.
+
+    This function allows authorized users to delete an existing group based on the provided Group_ID. To be authorized,
+    the user must have permission level 3 (typically indicating administrative privileges) for the group.
+
+    :param u: The authorized user with appropriate permissions.
+    :return: JSON response indicating the status of the group removal or an error message if the operation fails or if the user lacks the necessary permissions.
+    """
     if request.method == "DELETE":
         groupToDelete = request.json.get("Group_ID")
         perms = session_instance.query(Permissions).filter_by(
@@ -439,6 +501,13 @@ def removeGroup(u: Users):
 
 @api.route("/listGroups", methods=["GET"])
 def listGroups():
+    """
+    Retrieve a list of groups via a GET request.
+
+    This function allows you to retrieve a list of all available groups.
+
+    :return: JSON response containing a list of groups, where each group is represented as a list containing its Group_ID and Group_Name.
+    """
     if request.method == "GET":
         group_obj = session_instance.query(Groups).all()
         groups = [[group.Group_ID, group.Group_Name] for group in group_obj]
