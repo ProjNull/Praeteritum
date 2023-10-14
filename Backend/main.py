@@ -992,17 +992,59 @@ def send_feedback(u: Users):
 @api.route("/updateFeedback", methods=["POST"])
 @requires_authorization
 def update_feedback(u: Users):
-    return jsonify({
-        "message": "Not implemented"
-    })
+    """
+    WARNING: This does not verify,
+    whether the user has access to
+    modify the feedback.
+    """
+    if request.method == "POST":
+        fid = request.json.get("Feedback_ID")
+        content = request.json.get("Content")
+        column = request.json.get("ColumnName")
+        question_id = request.json.get("Question_ID")
+        f = session_instance.query(Feedbacks).filter_by(Feedback_ID=fid)
+        if not f:
+            return jsonify({"message": "There is no such feedback!"})
+        if question_id:
+            f.Questions_ID = question_id
+        if content:
+            f.Content = content
+        if column:
+            f.ColumnName = column
+        session_instance.add(f)
+        session_instance.commit()
+        return jsonify({"message": "Feedback created", "feedbackid": f.Feedback_ID})
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/getFeedback", methods=["POST"])
 @requires_authorization
 def get_feedback(u: Users):
-    return jsonify({
-        "message": "Not implemented"
-    })
+    if request.method == "POST":
+        fid = request.json.get("Feedback_ID")
+        f = session_instance.query(Feedbacks).filter_by(Feedback_ID=fid).first()
+        if not f:
+            return jsonify({"message": "There is no such feedback!"})
+        q = session_instance.query(Questions).filter_by(
+            Question_ID=f.Question_ID).first()
+        if not q:
+            return jsonify({"message": "There is no such question - Invalid feedback entry!"})
+        b = session_instance.query(Boards).filter_by(
+            Board_ID=q.Board_ID).first()
+        if not b:
+            return jsonify({"message": "There is no such board - Invalid feedback and question entries!"})
+        return jsonify(
+                {
+                    "message": "Found the specified feedback", 
+                    "content": f.Content, 
+                    "column": f.ColumnName, 
+                    "question_id": f.Questions_ID, 
+                    "author": f.User_ID if b.RevealPosts else None
+                 }
+                )
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
 @api.route("/fetchFeedbacks", methods=["POST"])
