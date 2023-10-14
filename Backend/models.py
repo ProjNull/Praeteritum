@@ -62,8 +62,9 @@ class Questions(Base):
         Integer, nullable=False, unique=True, primary_key=True, autoincrement=True
     )
     Content = Column(String, nullable=False)
-    Description = Column(String, nullable=True)
+    # Description = Column(String, nullable=True)
     Columns = Column(String, nullable=False)
+    Mandantory = Column(Boolean, nullable=False)
     Board_ID = Column(Integer, ForeignKey(
         "BoardsrModel.Board_ID"), nullable=False)
 
