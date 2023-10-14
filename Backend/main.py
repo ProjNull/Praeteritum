@@ -6,7 +6,7 @@ import jwt
 from database import Session, func
 from flask import Flask, json, jsonify, request, session
 from flask_socketio import SocketIO
-from models import Boards, Groups, Permissions, Questions, Users
+from models import Boards, Groups, Permissions, Questions, Users, Reaction
 from models import Feedback as Feedbacks
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -1049,6 +1049,20 @@ def delete_feedback(u: Users):
         return jsonify({"message": "Feedback deleted!"})
     else:
         return jsonify({"message": "This endpoint only supports POST requests!"})
+
+
+@api.route("/upvote", methods=["POST"])
+@requires_authorization
+def upvote(u: Users):
+    if request.method == "POST":
+        fid = request.json.get("Feedback_ID")
+        if fid:
+            r_obj = Reaction(Feedback_ID=fid, User_ID=u.User_ID)
+            session_instance.add(r_obj)
+            session_instance.commit()
+            return jsonify("I worked")
+        return jsonify("I did not work")
+    return jsonify("I did not work")
 
 
 @socketio.on("my_event")

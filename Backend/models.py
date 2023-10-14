@@ -88,7 +88,6 @@ class Reaction(Base):
     Reaction_ID = Column(
         Integer, nullable=False, unique=True, primary_key=True, autoincrement=True
     )
-    Reaction_value = Column(Boolean, nullable=True)
     Feedback_ID = Column(
         Integer, ForeignKey("FeedbackModel.Feedback_ID"), nullable=False
     )
