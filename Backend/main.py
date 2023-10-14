@@ -490,7 +490,7 @@ def listGroups():
         return groups
 
 
-@api.route("createBoard", methods=["POST"])
+@api.route("/createBoard", methods=["POST"])
 def board_create():
     if request.method == "POST":
         boardname = request.json.get("BoardName")
@@ -540,7 +540,7 @@ def board_delete():
         return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
-@api.route("getBoard", methods=["GET"])
+@api.route("/getBoard", methods=["GET"])
 def board_get():
     if request.method == "GET":
         board_id = request.json.get("Board_ID")
