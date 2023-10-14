@@ -540,6 +540,36 @@ def board_delete():
         return jsonify({"message": "This endpoint only supports POST requests!"})
 
 
+@api.route("getBoard", methods=["GET"])
+def board_get():
+    if request.method == "GET":
+        board_id = request.json.get("Board_ID")
+        if not board_id:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["Board_ID"],
+                }
+            )
+        b = session_instance.query(Boards).filter_by(Board_ID=board_id).first()
+        if not b:
+            return jsonify({"message": "A board with this ID does not exist!"})
+        return jsonify(
+            {
+                "message": "Board found!",
+                "name": b.BoardName,
+                "description": b.Description,
+                "group": b.Group_ID,
+                "phase": b.Phase,
+                "revealPosts": b.RevealPosts,
+                "isLocked": b.isLocked,
+                "isVotingLocked": b.isVotingLocked,
+            }
+        )
+    else:
+        return jsonify({"message": "This endpoint only supports GET requests!"})
+
+
 @api.route("/changePhase", methods=["POST"])
 @requires_authorization
 def changePhase(u: Users):
