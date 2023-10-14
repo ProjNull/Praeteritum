@@ -1,6 +1,6 @@
 <script>
 // @ts-nocheck
-
+	import { goto } from "$app/navigation";
 	let firstClick = true
 	let passMatch = true
 
@@ -19,6 +19,11 @@
 		}
 		const formData = new FormData(e.target);
 		const out = await api.register(formData.get("email"),formData.get("pass"), formData.get("first") + " " + formData.get("last"))
+		if (out["User_ID"]) {
+			goto("/login")
+		} else {
+			alert(`Error\n${out["name"]}\n${out["description"]}`)
+		}
 		firstClick = false
 	}
 

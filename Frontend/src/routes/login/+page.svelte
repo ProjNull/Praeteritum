@@ -9,7 +9,13 @@
 		proccesing = true
 		const formData = new FormData(e.target);
 		
-		const out = await api.login(formData.get("email"),formData.get("pass"))
+		let out = {"token":undefined}
+		try {
+			out = await api.login(formData.get("email"),formData.get("pass"))
+		} catch (error) {
+			proccesing = false
+		}
+		
 		if (out["token"]) {
 			Cookies.set('token', out["token"], { expires: 1 })
 			goto("/")
