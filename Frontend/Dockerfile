@@ -4,7 +4,7 @@ WORKDIR /opt/prae-fe/
 
 COPY . .
 
-RUN ["npm", "ci"]
+RUN ["npm", "i"]
 
 EXPOSE 5173
 
