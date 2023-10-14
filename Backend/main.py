@@ -1109,7 +1109,7 @@ def get_many_feedbacks(u: Users):
             Questions_ID=question_id).all()
         if not f:
             return jsonify({"message": "There are no feedbacks on this board!"})
-        feedbacks = [{"id": fIns.Board_ID, "content": fIns.Content}
+        feedbacks = [{"id": fIns.Board_ID, "content": fIns.Content, "col": fIns.ColumnName}
                      for fIns in f]
         return jsonify(
             {"message": f"{len(feedbacks)} feedbacks fetched!",
