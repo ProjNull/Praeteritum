@@ -405,22 +405,17 @@ def perm_user_groups():
         )
 
 
-@api.route("/addGroup", methods=["POST"])
+@api.route("/addGroup", methods=["post"])
 def addGroup():
     if request.method == "POST":
         Group_Name = request.json["Group_Name"]
         Description = request.json["Description"]
 
-        Group_obj = session_instance.query(Groups).filter_by(Group_Name=Group_Name)
+        GroupToCommit = Groups(Group_Name=Group_Name, Description=Description)
+        session_instance.add(GroupToCommit)
 
-        if Group_Name not in Group_obj:
-            GroupToCommit = Groups(
-                Group_Name=Group_Name, 
-                Description=Description
-            )
-            session_instance.add(GroupToCommit)
-            return jsonify("Group created")
-        return jsonify("You shouldn't get this response")
+        session_instance.commit()
+        return jsonify("Group created")
     return jsonify("Wrong request")
 
 
@@ -446,11 +441,8 @@ def removeGroup(u: Users):
 def listGroups():
     if request.method == "GET":
         group_obj = session_instance.query(Groups).all()
-        i = []
-        for group in group_obj:
-            item = [group.Group_ID, group.Group_Name]
-            i.append(item)
-        return i
+        groups = [[group.Group_ID, group.Group_Name] for group in group_obj]
+        return groups
 
 
 @socketio.on("my_event")
