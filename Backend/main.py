@@ -30,7 +30,7 @@ def make_dummy_data():
         Email="admin@example.com").first()
     if q:
         return
-    u1 = Users(Name="Admin Admin", Email="admin@example.com", Password="admin")
+    u1 = Users(Name="Admin Admin", Email="admin@example.com", Password="adminadmin")
     u2 = Users(Name="Script Inane",
                Email="script@example.com", Password="script")
     session_instance.add(u1)
@@ -100,6 +100,7 @@ def add_header(response):
     :param response: The Flask response object.
     """
     response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "content-type"
     return response
 
 
