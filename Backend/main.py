@@ -47,7 +47,31 @@ def make_dummy_data():
     session_instance.add(p1)
     session_instance.add(p2)
     b1 = Boards(
-        BoardName="Untitled Board",
+        BoardName="Example",
+        Group_ID=g1.Group_ID,
+        Phase=0,
+        RevealPosts=True,
+        isLocked=False,
+        isVotingLocked=False,
+    )
+    b2 = Boards(
+        BoardName="My Board",
+        Group_ID=g1.Group_ID,
+        Phase=0,
+        RevealPosts=True,
+        isLocked=False,
+        isVotingLocked=False,
+    )
+    b3 = Boards(
+        BoardName="Another board",
+        Group_ID=g1.Group_ID,
+        Phase=0,
+        RevealPosts=True,
+        isLocked=False,
+        isVotingLocked=False,
+    )
+    b4 = Boards(
+        BoardName="and yet another board",
         Group_ID=g1.Group_ID,
         Phase=0,
         RevealPosts=True,
@@ -55,6 +79,9 @@ def make_dummy_data():
         isVotingLocked=False,
     )
     session_instance.add(b1)
+    session_instance.add(b2)
+    session_instance.add(b3)
+    session_instance.add(b4)
     session_instance.commit()
     q1 = Questions(
         Content="How do you rate your experience?",
