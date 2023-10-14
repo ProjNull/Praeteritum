@@ -6,7 +6,7 @@ import jwt
 from database import Session, func
 from flask import Flask, json, jsonify, request, session
 from flask_socketio import SocketIO
-from models import Users
+from models import Permissions, Users
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -204,6 +204,196 @@ def login():
         else:
             session_instance.close()
             return jsonify({"message": "Incorrect email or password!"})
+    else:
+        return jsonify(
+            {"message": "This endpoint only supports POST requests for registration."}
+        )
+
+
+@api.route("/permission/get/", methods=["POST"])
+def perm_get(permid: int):
+    if request.method == "POST":
+        permid = request.json.get("permid")
+        if not permid:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["permid"],
+                }
+            )
+        p = session_instance.query(Permissions).filter_by(
+            Permission_ID=permid).first()
+        if not p:
+            return jsonify({"message": "A permission with this ID does not exist!"})
+        return jsonify(
+            {
+                "message": "Found a permission entry!",
+                "userid": p.User_ID,
+                "groupid": p.Group_ID,
+                "level": p.Permission_Level,
+            }
+        )
+    else:
+        return jsonify(
+            {"message": "This endpoint only supports POST requests for registration."}
+        )
+
+
+@api.route("/permission/create/", methods=["POST"])
+def perm_create():
+    if request.method == "POST":
+        userid = request.json.get("userid")
+        groupid = request.json.get("groupid")
+        level = request.json.get("level")
+        if None in [userid, groupid, level]:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["userid", "groupid", "level"],
+                }
+            )
+        if level >= 3 or level < 0:
+            return jsonify({"message": "Level must be in the interval <0;3)"})
+        q_link_exists = (
+            session_instance.query(Permissions)
+            .filter_by(User_ID=userid, Group_ID=groupid)
+            .first()
+        )
+        if q_link_exists:
+            return jsonify(
+                {
+                    "message": "This user is already linked to the specified group! Use update instead!"
+                }
+            )
+        r = Permissions(Permission_Level=level,
+                        Group_ID=groupid, User_ID=userid)
+        return jsonify(
+            {"message": "Created a new permission link", "permid": r.Permission_ID}
+        )
+    else:
+        return jsonify(
+            {"message": "This endpoint only supports POST requests for registration."}
+        )
+
+
+@api.route("/permission/delete/", methods=["POST"])
+def perm_delete():
+    if request.method == "POST":
+        permid = request.json.get("permid")
+        if not permid:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["permid"],
+                }
+            )
+        q = session_instance.query(Permissions).filter_by(
+            Permission_ID=permid).first()
+        if not q:
+            return jsonify({"message": "Permission link with this ID does not exist"})
+        session_instance.delete(q)
+        return jsonify({"message": "Permission link destroyed"})
+    else:
+        return jsonify(
+            {"message": "This endpoint only supports POST requests for registration."}
+        )
+
+
+@api.route("/permission/update/", methods=["POST"])
+def perm_update():
+    if request.method == "POST":
+        permid = request.json.get("permid")
+        level = request.json.get("level")
+        if None in [permid, level]:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["permid", "level"],
+                }
+            )
+        if level >= 3 or level < 0:
+            return jsonify({"message": "Level must be in the interval <0;3)"})
+        q = session_instance.query(Permissions).filter_by(
+            Permission_ID=permid).first()
+        if not q:
+            return jsonify({"message": "Permission link with this ID does not exist"})
+        q.Permission_Level = level
+        session_instance.add(q)
+        return jsonify(
+            {"message": "Permission link updated with the new permission level."}
+        )
+    else:
+        return jsonify(
+            {"message": "This endpoint only supports POST requests for registration."}
+        )
+
+
+@api.route("/permission/users_in", methods=["POST"])
+def perm_group_users():
+    if request.method == "POST":
+        groupid = request.json.get("groupid")
+        limit = request.json.get("limit")
+        offset = request.json.get("offset", 0)
+        if None in [groupid, limit, offset]:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["groupid", "limit", "offset"],
+                }
+            )
+        q = [
+            i.User_ID
+            for i in (
+                session_instance.query(Permissions)
+                .filter_by(Group_ID=groupid)
+                .limit(limit)
+                .offset(offset * limit)
+            )
+        ]
+        if not q:
+            return jsonify({"message": "This group does not have any users in it"})
+        return jsonify(
+            {
+                "message": f"Found all users ({limit} per page, page {offset+1}) in the specified group",
+                "users": q,
+            }
+        )
+    else:
+        return jsonify(
+            {"message": "This endpoint only supports POST requests for registration."}
+        )
+
+
+@api.route("/permission/groups_of", methods=["POST"])
+def perm_user_groups(userid):
+    if request.method == "POST":
+        userid = request.json.get("userid")
+        limit = request.json.get("limit")
+        offset = request.json.get("offset")
+        if None in [userid, limit, offset]:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["userid", "limit", "offset"],
+                }
+            )
+        q = [
+            i.User_ID
+            for i in (
+                session_instance.query(Permissions)
+                .filter_by(User_ID=userid)
+                .limit(limit)
+                .offset(offset * limit)
+            )
+        ]
+        if not q:
+            return jsonify({"message": "This user is not in any groups"})
+        return jsonify(
+            {
+                "message": f"Found all groups ({limit} per page, page {offset+1}) for the specified user",
+                "groups": q,
+            }
+        )
     else:
         return jsonify(
             {"message": "This endpoint only supports POST requests for registration."}
