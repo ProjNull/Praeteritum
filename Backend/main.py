@@ -633,7 +633,7 @@ def board_fetch_many():
         b = session_instance.query(Boards).filter_by(
             Group_ID=group_id, Phase=phase).all()
         if not b:
-            return jsonify({"message": "A board with this ID does not exist!"})
+            return jsonify({"message": "There are no boards in this group!"})
         boards = [[bIns.Board_ID, bIns.BoardName] for bIns in b]
         return jsonify({"message": f"{len(boards)} boards fetched!", "boards": boards})
     else:
