@@ -75,6 +75,7 @@ class Feedback(Base):
         Integer, nullable=False, unique=True, primary_key=True, autoincrement=True
     )
     Content = Column(String, nullable=False)
+    ColumnName = Column(String, nullable=False)
     Questions_ID = Column(
         Integer, ForeignKey("QuestionsModel.Questions_ID"), nullable=False
     )
