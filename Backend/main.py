@@ -490,7 +490,7 @@ def listGroups():
         return groups
 
 
-@api.route("/board/create/", methods=["POST"])
+@api.route("createBoard", methods=["POST"])
 def board_create():
     if request.method == "POST":
         boardname = request.json.get("BoardName")
@@ -515,6 +515,27 @@ def board_create():
         session_instance.add(b)
         session_instance.commit()
         return jsonify({"message": "Board created", "boardid": b.Board_ID})
+    else:
+        return jsonify({"message": "This endpoint only supports POST requests!"})
+
+
+@api.route("deleteBoard", methods=["POST"])
+def board_delete():
+    if request.method == "POST":
+        board_id = request.json.get("Board_ID")
+        if not board_id:
+            return jsonify(
+                {
+                    "message": "You must provide the required fields!",
+                    "required_fields": ["Board_ID"],
+                }
+            )
+        b = session_instance.query(Boards).filter_by(Board_ID=board_id).first()
+        if not b:
+            return jsonify({"message": "A board with this ID does not exist!"})
+        session_instance.delete(b)
+        session_instance.commit()
+        return jsonify({"message": "Board deleted"})
     else:
         return jsonify({"message": "This endpoint only supports POST requests!"})
 
