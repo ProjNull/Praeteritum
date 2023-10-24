@@ -13,4 +13,4 @@ setuptools==68.0.0
 SQLAlchemy==2.0.22
 typing_extensions==4.8.0
 Werkzeug==3.0.0
-wheel==0.37.1
+wheel==0.38.1
