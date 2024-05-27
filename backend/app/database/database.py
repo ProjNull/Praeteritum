@@ -1,26 +1,41 @@
+from typing import Generator
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
-# Create engine
-engine = create_engine("sqlite:///database.db", echo=False, logging_name="sqlalchemy")
+from ..config import DB_DRIVER, DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 
-# Create session maker
-Session = sessionmaker(bind=engine)
+if DB_DRIVER == "postgresql":
+    SQLALCHEMY_DATABASE_URL = (
+        f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
+elif DB_DRIVER == "sqlite":
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./sqlite.db"
 
-# Create declarative base
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, echo=False
+)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 Base = declarative_base()
 
-# Create tables
-Base.metadata.create_all(engine)
 
+def get_session() -> Generator[any, any, Session]:
+    """
+    Returns a generator that yields a database session. The session is created using the `SessionLocal` class from the `sqlalchemy.orm` module. The session is automatically closed when the generator is exhausted.
+    Usage: session = Depends(get_session)
 
-# Function to get a session with rollback capability
-def get_session() -> Session: # type: ignore
-    session = Session()
+    Returns:
+        Generator[any, any, Session]: A generator that yields a database session.
+
+    Raises:
+        Exception: If an exception occurs during the execution of the generator, the session is rolled back and the exception is re-raised.
+    """
+    session = SessionLocal()
     try:
         yield session
-        session.commit()
     except Exception as e:
         session.rollback()
         raise e
