@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "prae-backend"
+version = "0.1.0"
+description = "Backend for Praeteritum: https://github.com/ProjNull/Praeteritum"
+authors = ["HyScript7 <hyscript7@seznam.cz>, SomeKristi <kmaas2007@gmail.com>, kaiy <kaiysokkatto@gmail.com>"]
+license = "MIT License"
+readme = "README.md"
+packages = [{include = "prae_backend"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111.0"
+uvicorn = "^0.29.0"
+sqlalchemy = "^2.0.30"
+python-jose = "^3.3.0"
+passlib = "^1.7.4"
+python-dotenv = "^1.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+package-mode = false
