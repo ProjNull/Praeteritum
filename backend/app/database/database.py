@@ -1,5 +1,3 @@
-from contextlib import contextmanager
-
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -18,7 +16,6 @@ Base.metadata.create_all(engine)
 
 
 # Function to get a session with rollback capability
-@contextmanager
 def get_session() -> Session: # type: ignore
     session = Session()
     try:
