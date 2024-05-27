@@ -9,30 +9,31 @@ services:
       replicas: 3
     hostname: backend
     depends_on:
-      - mongo
-      - memcached
+      - postgres
+      - redis
     links:
-      - mongo
-      - memcached
+      - postgres
+      - redis
     environment:
-      - DB_HOST=mongo
-      - DB_PORT=27017
+      - DB_HOST=postgres
+      - DB_PORT=5432
       - DB_USER=prae
       - DB_PASSWORD=password
       - DB_NAME=prae
-      - CACHE_HOST=memcached
-      - CACHE_PORT=11211
+      - CACHE_HOST=redis
+      - CACHE_PORT=6379
 
-  mongo:
-    image: mongo
-    hostname: mongo
+  postgres:
+    image: postgres
+    hostname: postgres
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=prae
-      - MONGO_INITDB_ROOT_PASSWORD=password
+      - POSTGRES_DB=prae
+      - POSTGRES_USER=prae
+      - POSTGRES_PASSWORD=password
 
-  memcached:
-    image: memcached
-    hostname: memcached
+  redis:
+    image: redis
+    hostname: redis
     ulimits:
       memlock: -1
 
