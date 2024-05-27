@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from .database import get_session
 
 app = FastAPI()
 
