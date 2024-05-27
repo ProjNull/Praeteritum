@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 3
+    hostname: backend
+    depends_on:
+      - postgres
+      - redis
+    links:
+      - postgres
+      - redis
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=prae
+      - DB_PASSWORD=password
+      - DB_NAME=prae
+      - CACHE_HOST=redis
+      - CACHE_PORT=6379
+
+  postgres:
+    image: postgres
+    hostname: postgres
+    environment:
+      - POSTGRES_DB=prae
+      - POSTGRES_USER=prae
+      - POSTGRES_PASSWORD=password
+
+  redis:
+    image: redis
+    hostname: redis
+    ulimits:
+      memlock: -1
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 3
+    hostname: frontend
+    depends_on:
+      - backend
+    links:
+      - backend
+
+  ingress:
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
+      - frontend
+    links:
+      - backend
+      - frontend
