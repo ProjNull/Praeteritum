@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 
 from .. import Base
 
@@ -20,7 +20,7 @@ class Users(Base):
 class UserToGroup(Base):
     __tablename__ = "user_to_group"
     utg_id = Column(Integer, primary_key=True, autoincrement= "auto", nullable=False)
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    user_id = Column(String, nullable=False)
     group_id = Column(Integer, ForeignKey("groups.group_id"), nullable=False)
 
     def __init__(self, user_id, group_id):
@@ -38,8 +38,10 @@ class Groups(Base):
 class Retros(Base):
     __tablename__ = "retros"
     retro_id = Column(Integer, primary_key=True, autoincrement= "auto", nullable=False)
-    name = Column(String(64), nullable=False)
     group_id = Column(Integer, ForeignKey("groups.group_id"), nullable=False)
+    name = Column(String(64), nullable=False)
+    ended = Column(Boolean, nullable=False)
+
 
     def __init__(self, name, group_id):
         self.name = name
