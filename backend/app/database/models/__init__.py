@@ -1,1 +1,1 @@
-from .example_model import SusModel
+from .example_model import *
