@@ -4,7 +4,8 @@ from .. import Session
 async def example_action(db: Session):
     groups: list[Groups] = db.query(Groups).filter_by(...).all()
 
-async def join_group(db: Session):
+async def join_group(db: Session, user_id: str, group_id: int):
+    #implement check if has invite
     pass
 async def leave_group(db: Session):
     pass
