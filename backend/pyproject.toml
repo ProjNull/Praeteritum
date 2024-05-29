@@ -16,6 +16,7 @@ python-jose = "^3.3.0"
 passlib = "^1.7.4"
 python-dotenv = "^1.0.1"
 psycopg2-binary = "^2.9.9"
+kinde-python-sdk = "^1.2.4"
 
 
 [build-system]
