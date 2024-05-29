@@ -38,5 +38,5 @@ def callback(request: Request):
 @kinde_router.get("/logout")
 def logout(kinde_client: KindeApiClient = Depends(user_service.get_kinde_client)):
     logout_url = kinde_client.logout(redirect_to="/api/v1/")
-    user_service.drop_kinde_client(kinde_client.user_id)
+    user_service.drop_kinde_client(kinde_client.get_user_details().get("id"))
     return RedirectResponse(logout_url)
