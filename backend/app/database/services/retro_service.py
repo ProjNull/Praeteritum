@@ -56,8 +56,6 @@ def delete_retro(db: Session, query: retro_schemas.QueryRetro):
 
 def update_retro(db: Session, query: retro_schemas.UpdateRetro):
     retro = get_retro_by_id(db, retro_schemas.QueryRetro(retro_id=query.retro_id))
-    if not retro:
-        raise HTTPException(status_code=404, detail="Retro not found")
     if query.name:
         retro.name = query.name
     if query.description:
@@ -77,8 +75,6 @@ def get_retro_members(db: Session, query: retro_schemas.QueryRetro):
 
 def add_user_to_retro(db: Session, query: retro_schemas.UserToRetro):
     retro = get_retro_by_id(db, retro_schemas.QueryRetro(retro_id=query.retro_id))
-    if not retro:
-        raise HTTPException(status_code=404, detail="Retro not found")
     db.add(UTRModel(retro_id=retro.retro_id, user_id=query.user_id))
 
 
