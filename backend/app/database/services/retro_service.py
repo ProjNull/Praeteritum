@@ -5,7 +5,7 @@ from .. import Session
 from .schemas import retro_schemas
 
 
-def create_retro(db: Session, query: retro_schemas.CreateRetro):
+def create_retro(db: Session, query: retro_schemas.RetroCreate):
     retro = RetroModel(
         query.organization_id,
         query.user_id,
@@ -72,7 +72,7 @@ def delete_retro(db: Session, query: retro_schemas.QueryRetro):
             ).delete()
 
 
-def update_retro(db: Session, query: retro_schemas.UpdateRetro):
+def update_retro(db: Session, query: retro_schemas.RetroUpdate):
     retro = get_retro_by_id(
         db, 
         retro_schemas.QueryRetro(
