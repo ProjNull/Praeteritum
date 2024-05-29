@@ -1,8 +1,7 @@
-from typing import Union
-from fastapi import FastAPI, Depends, HTTPException, status, Request, APIRouter
-from fastapi.responses import RedirectResponse
+from fastapi import Depends, Request, APIRouter
 from ...database.services import group_service
 from .services.user_service import get_kinde_client
+
 groups_router = APIRouter(prefix="/groups")
 """
 TODO: Finish list_groups
