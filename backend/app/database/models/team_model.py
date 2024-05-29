@@ -1,8 +1,8 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, ARRAY
+from sqlalchemy import Column, Integer, String, ForeignKey
 from enum import Enum
 
 from .. import Base
-from .example_model import Groups
+from .groups_model import Groups
 
 
 class TeamPermissionLevel(Enum):
