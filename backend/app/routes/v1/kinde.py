@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, Request
+import jose
+import jose.jwk
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from kinde_sdk.kinde_api_client import KindeApiClient
 
-from ...config import KINDE_API_CLIENT_PARAMS
+from ...config import KINDE_API_CLIENT_PARAMS, KINDE_JWK_KEYS
 from .services import user_service
 
 kinde_router = APIRouter(prefix="/kinde")
@@ -32,7 +34,11 @@ def callback(request: Request):
     kinde_client.fetch_token(authorization_response=str(request.url))
     user = kinde_client.get_user_details()
     user_service.set_kinde_client(user.get("id"), kinde_client)
-    return {"user_id": user.get("id"), "token": user_service.create_jwt_token(user.get("id"))}
+    return {
+        "user_id": user.get("id"),
+        "session_token": user_service.create_jwt_token(user.get("id")),
+        "kinde_token": kinde_client.configuration.access_token,
+    }
 
 
 @kinde_router.get("/logout")
@@ -40,3 +46,8 @@ def logout(kinde_client: KindeApiClient = Depends(user_service.get_kinde_client)
     logout_url = kinde_client.logout(redirect_to="/api/v1/")
     user_service.drop_kinde_client(kinde_client.get_user_details().get("id"))
     return RedirectResponse(logout_url)
+
+
+@kinde_router.get("/validate")
+def validate(token: str):
+    return jose.jwt.decode(token, KINDE_JWK_KEYS[0], algorithms=["RS256"], audience="127.0.0.1")
