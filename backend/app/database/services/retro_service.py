@@ -13,21 +13,31 @@ def create_retro(db: Session, query: retro_schemas.CreateRetro):
         query.description,
         query.is_public,
     )
-    db.add(retro)
+    db.add(
+            retro
+        )
 
 
 def get_retro_by_id(db: Session, query: retro_schemas.QueryRetro):
-    return db.query(RetroModel).filter(RetroModel.retro_id == query.retro_id).first()
+    return db.query(
+            RetroModel
+        ).filter(
+                RetroModel.retro_id == query.retro_id
+            ).first()
 
 
 def get_all_retros_in_org(
     db: Session, query: retro_schemas.QueryAllRetrosInOrganization
 ):
     return (
-        db.query(RetroModel)
-        .filter(RetroModel.organization_id == query.organization_id)
-        .all()
-    )
+        db.query(
+                RetroModel
+            )
+            .filter(
+                    RetroModel.organization_id == query.organization_id
+                )
+            .all()
+        )
 
 
 def get_all_retros_by_user(db: Session, query: retro_schemas.QueryAllRetrosForUser):
@@ -36,26 +46,39 @@ def get_all_retros_by_user(db: Session, query: retro_schemas.QueryAllRetrosForUs
 
 def fetch_retros(db: Session, query: retro_schemas.QueryRetroList):
     return (
-        db.query(RetroModel)
-        .filter(
-            RetroModel.organization_id == query.organization_id
-            and (
-                False
-                if not query.match_Active
-                else RetroModel.is_active == query.is_active
+        db.query(
+                RetroModel
             )
-            and (RetroModel.is_public if query.public_only else True)
-        )
-        .all()
-    )
+            .filter(
+                RetroModel.organization_id == query.organization_id
+                and (
+                    False
+                    if not query.match_Active
+                    else RetroModel.is_active == query.is_active
+                )
+                and (
+                        RetroModel.is_public if query.public_only else True
+                    )
+                )
+                .all()
+            )
 
 
 def delete_retro(db: Session, query: retro_schemas.QueryRetro):
-    db.query(RetroModel).filter(RetroModel.retro_id == query.retro_id).delete()
+    db.query(
+            RetroModel
+        ).filter(
+                RetroModel.retro_id == query.retro_id
+            ).delete()
 
 
 def update_retro(db: Session, query: retro_schemas.UpdateRetro):
-    retro = get_retro_by_id(db, retro_schemas.QueryRetro(retro_id=query.retro_id))
+    retro = get_retro_by_id(
+        db, 
+        retro_schemas.QueryRetro(
+                retro_id=query.retro_id
+            )
+        )
     if query.name:
         retro.name = query.name
     if query.description:
@@ -74,11 +97,25 @@ def get_retro_members(db: Session, query: retro_schemas.QueryRetro):
 
 
 def add_user_to_retro(db: Session, query: retro_schemas.UserToRetro):
-    retro = get_retro_by_id(db, retro_schemas.QueryRetro(retro_id=query.retro_id))
-    db.add(UTRModel(retro_id=retro.retro_id, user_id=query.user_id))
+    retro = get_retro_by_id(
+        db, 
+        retro_schemas.QueryRetro(
+                retro_id=query.retro_id
+            )
+        )
+    
+    db.add(
+        UTRModel(
+                retro_id=retro.retro_id, 
+                user_id=query.user_id
+            )
+        )
 
 
 def remove_user_from_retro(db: Session, query: retro_schemas.UserToRetro):
-    db.query(UTRModel).filter(
-        UTRModel.retro_id == query.retro_id, UTRModel.user_id == query.user_id
-    ).delete()
+    db.query(
+            UTRModel
+        ).filter(
+                UTRModel.retro_id == query.retro_id, 
+                UTRModel.user_id == query.user_id
+            ).delete()

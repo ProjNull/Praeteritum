@@ -1,7 +1,6 @@
 from fastapi import Depends, Request, APIRouter
 from ...database.services import team_service
 from ...database import get_session
-from .services.user_service import get_kinde_client
 
 teams_router = APIRouter(prefix="/teams")
 
