@@ -16,6 +16,7 @@ security = HTTPBearer()
 
 user_clients: Dict[str, KindeApiClient] = {}
 
+
 def get_login_url() -> str:
     kinde_client = KindeApiClient(**KINDE_API_CLIENT_PARAMS)
     return kinde_client.get_login_url()
@@ -35,7 +36,9 @@ def decode_jwt_token(jwt_token: str) -> Dict[str, Any] | None:
         return None
     for key in KINDE_JWK_KEYS:
         try:
-            payload: Dict[str, Any] = jwt.decode(jwt_token, key, algorithms=["RS256"], audience=KINDE_AUDIENCE_API)
+            payload: Dict[str, Any] = jwt.decode(
+                jwt_token, key, algorithms=["RS256"], audience=KINDE_AUDIENCE_API
+            )
             return payload
         except JWTError:
             pass
@@ -57,16 +60,31 @@ def get_kinde_client(
     payload = decode_jwt_token(credentials.credentials)
     if payload is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="JWT Token is Invalid! Please re-log!"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="JWT Token is Invalid! Please re-log!",
         )
     user_id: str = payload.get("sub", None)
     if user_id not in user_clients or user_id is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User state not found! Please re-log!"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User state not found! Please re-log!",
         )
     kinde_client = user_clients[user_id]
     if not kinde_client.is_authenticated():
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Kinde Client isn't Authenticated! Please re-log!"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Kinde Client isn't Authenticated! Please re-log!",
         )
     return kinde_client
+
+
+def get_token_payload(
+    credentials: HTTPAuthorizationCredentials = Security(security),
+) -> KindeApiClient:
+    payload = decode_jwt_token(credentials.credentials)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="JWT Token is Invalid! Please re-log!",
+        )
+    return payload

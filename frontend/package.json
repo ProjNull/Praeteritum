@@ -20,6 +20,7 @@
     "vite-plugin-solid": "^2.8.2"
   },
   "dependencies": {
+    "@kinde-oss/kinde-auth-pkce-js": "^3.1.0",
     "@solidjs/router": "^0.13.3",
     "solid-js": "^1.8.11"
   }
