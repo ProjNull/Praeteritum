@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 
-# class Invite_user(db: Session, user_id_sender: str, user_id_invited: str, group_id: int,
 class GroupBase(BaseModel):
     name: str
 
