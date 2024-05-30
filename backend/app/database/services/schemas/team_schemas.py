@@ -23,7 +23,7 @@ class TeamMemberBase(BaseModel):
 class TeamMemberUpdate(TeamMemberBase):
     permission_level: int = Field(default=1)
 
-class TeamMemberCreate(TeamMemberBase, TeamMemberUpdate):
+class TeamMemberCreate(TeamMemberUpdate):
     pass
 
 class TeamMember(TeamMemberBase):

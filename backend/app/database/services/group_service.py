@@ -2,7 +2,7 @@ from typing import List
 from ..models.groups_model import Groups
 from ..models.utg_model import UserToGroup
 from ..models.invites_model import Invites
-from schemas import group_schemas
+from .schemas import group_schemas
 from .. import Session
 from fastapi import HTTPException
 
