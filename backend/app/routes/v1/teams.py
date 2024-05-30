@@ -44,6 +44,6 @@ def remove_user_from_team(body: team_service.team_schemas.TeamMemberBase, db = D
 def create_team(body: team_service.team_schemas.TeamBase, db = Depends(get_session)):
     return team_service.create_team(db, body)
 
-@teams_router.post("/delete_team")
+@teams_router.delete("/delete_team")
 def delete_team(body: team_service.team_schemas.TeamBase, db = Depends(get_session)):
     return team_service.delete_team(db, body)
