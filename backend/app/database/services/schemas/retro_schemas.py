@@ -21,6 +21,7 @@ class RetroUpdate(BaseModel):
 
 
 class Retro(RetroBase):
+    retro_id: int
     stage: int
     is_active: bool
     name: str
