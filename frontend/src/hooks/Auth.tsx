@@ -43,13 +43,14 @@ async function authenticate(redirect_to_home: boolean = true) {
   await kinde.login();
 }
 
-async function getKindleClient() {
+async function getKindleClient(): Promise<KindeClient> {
   const kinde = await createKindeClient({
     client_id: "df28cfcf901448078400d1445f769a11",
     domain: "https://hyscript7-praedev.eu.kinde.com",
-    redirect_uri: window.location.origin + "/",
+    redirect_uri: window.location.href,
     audience: "127.0.0.1",
   });
+  return kinde; 
 }
 
 export { authenticate, getKindleClient };
