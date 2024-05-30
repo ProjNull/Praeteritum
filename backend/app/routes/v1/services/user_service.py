@@ -1,18 +1,20 @@
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Any
+
+from jose import jwt
+from kinde_sdk.kinde_api_client import KindeApiClient
 
 from fastapi import HTTPException, Security, status
+from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from kinde_sdk.kinde_api_client import KindeApiClient
 
-from ....config import JWT_EXPIRE_IN, JWT_SECRET, KINDE_API_CLIENT_PARAMS
+from ....config import KINDE_API_CLIENT_PARAMS, KINDE_JWK_KEYS, KINDE_AUDIENCE_API
 
 security = HTTPBearer()
 
 user_clients: Dict[str, KindeApiClient] = {}
-
-MESSAGE_NOT_AUTHENTICATED: str = "Not authenticated"
 
 
 def get_login_url() -> str:
@@ -25,37 +27,22 @@ def get_register_url() -> str:
     return kinde_client.get_register_url()
 
 
-def decode_jwt_token(jwt_token: str) -> str | None:
+def decode_jwt_token(jwt_token: str) -> Dict[str, Any] | None:
     """
     Returns:
-        str | None: The userid if the token is valid, otherwise None
+        Dict[str, Any] | None: The userid if the token is valid, otherwise None
     """
     if jwt_token is None:
         return None
-    try:
-        payload: Dict[str | None] = jwt.decode(
-            jwt_token, JWT_SECRET, algorithms=["HS256"]
-        )
-        return payload.get("user_id", None)
-    except JWTError:
-        return None
-
-
-def create_jwt_token(user_id: str) -> str:
-    """
-    Creates a JSON Web Token (JWT) for the given user ID.
-
-    Args:
-        user_id (str): The kinde user id
-
-    Returns:
-        str: The JWT token
-    """
-    return jwt.encode(
-        {"user_id": user_id, "exp": datetime.now() + JWT_EXPIRE_IN},
-        JWT_SECRET,
-        algorithm="HS256",
-    )
+    for key in KINDE_JWK_KEYS:
+        try:
+            payload: Dict[str, Any] = jwt.decode(
+                jwt_token, key, algorithms=["RS256"], audience=KINDE_AUDIENCE_API
+            )
+            return payload
+        except JWTError:
+            pass
+    return None
 
 
 def drop_kinde_client(user_id: str):
@@ -70,14 +57,34 @@ def set_kinde_client(user_id: str, kinde_client: KindeApiClient):
 def get_kinde_client(
     credentials: HTTPAuthorizationCredentials = Security(security),
 ) -> KindeApiClient:
-    user_id = decode_jwt_token(credentials.credentials)
+    payload = decode_jwt_token(credentials.credentials)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="JWT Token is Invalid! Please re-log!",
+        )
+    user_id: str = payload.get("sub", None)
     if user_id not in user_clients or user_id is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=MESSAGE_NOT_AUTHENTICATED
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User state not found! Please re-log!",
         )
     kinde_client = user_clients[user_id]
     if not kinde_client.is_authenticated():
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=MESSAGE_NOT_AUTHENTICATED
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Kinde Client isn't Authenticated! Please re-log!",
         )
     return kinde_client
+
+
+def get_token_payload(
+    credentials: HTTPAuthorizationCredentials = Security(security),
+) -> KindeApiClient:
+    payload = decode_jwt_token(credentials.credentials)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="JWT Token is Invalid! Please re-log!",
+        )
+    return payload

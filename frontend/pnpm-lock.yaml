@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@kinde-oss/kinde-auth-pkce-js':
+    specifier: ^3.1.0
+    version: 3.1.0
   '@solidjs/router':
     specifier: ^0.13.3
     version: 0.13.3(solid-js@1.8.11)
@@ -662,6 +665,12 @@ packages:
       '@jridgewell/resolve-uri': 3.1.0
       '@jridgewell/sourcemap-codec': 1.4.14
     dev: true
+
+  /@kinde-oss/kinde-auth-pkce-js@3.1.0:
+    resolution: {integrity: sha512-6Q80hF2obYKsXjpD7VgqwAi9CJcurdwtw3WJtJT+Fk4f0LiCsyhOB2Dy96STGSvWPtEeQYO3sryteJG3lexM2w==}
+    dependencies:
+      jwt-decode: 4.0.0
+    dev: false
 
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -1515,6 +1524,11 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
     dev: true
+
+  /jwt-decode@4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
+    dev: false
 
   /lilconfig@2.1.0:
     resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}

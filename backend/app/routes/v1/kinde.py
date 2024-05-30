@@ -1,3 +1,5 @@
+from typing import Dict
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from kinde_sdk.kinde_api_client import KindeApiClient
@@ -18,12 +20,9 @@ def login():
     return RedirectResponse(user_service.get_login_url())
 
 
-# Register endpoint
 @kinde_router.get("/register")
 def register():
-    kinde_client = KindeApiClient(**KINDE_API_CLIENT_PARAMS)
-    register_url = kinde_client.get_register_url()
-    return RedirectResponse(register_url)
+    return RedirectResponse(user_service.get_register_url())
 
 
 @kinde_router.get("/callback")
@@ -32,11 +31,20 @@ def callback(request: Request):
     kinde_client.fetch_token(authorization_response=str(request.url))
     user = kinde_client.get_user_details()
     user_service.set_kinde_client(user.get("id"), kinde_client)
-    return {"user_id": user.get("id"), "token": user_service.create_jwt_token(user.get("id"))}
+    # TODO: Wtf
+    return RedirectResponse("http://localhost:3000/")
 
 
 @kinde_router.get("/logout")
 def logout(kinde_client: KindeApiClient = Depends(user_service.get_kinde_client)):
-    logout_url = kinde_client.logout(redirect_to="/api/v1/")
+    logout_url = kinde_client.logout(redirect_to="/")
     user_service.drop_kinde_client(kinde_client.get_user_details().get("id"))
-    return RedirectResponse(logout_url)
+    return RedirectResponse(logout_url, headers={"Authorization": f"Bearer {kinde_client.configuration.access_token}"})
+
+
+@kinde_router.get("/token")
+def token(payload: Dict = Depends(user_service.get_token_payload)):
+    kinde_client: KindeApiClient | None = user_service.user_clients.get(payload.get("sub"), None)
+    if kinde_client is None:
+        return RedirectResponse("/api/v1/kinde/login")
+    return {"token": kinde_client.configuration.access_token}
