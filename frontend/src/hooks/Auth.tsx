@@ -24,7 +24,7 @@ async function verifyTokenValidity() {
   return resp.status == 200 && !resp.redirected;
 }
 
-const authenticate = async (redirect_to_home: boolean = true) => {
+async function authenticate(redirect_to_home: boolean = true) {
   const kinde = await createKindeClient({
     client_id: "df28cfcf901448078400d1445f769a11",
     domain: "https://hyscript7-praedev.eu.kinde.com",
@@ -41,6 +41,16 @@ const authenticate = async (redirect_to_home: boolean = true) => {
     return;
   }
   await kinde.login();
-};
+}
 
-export default authenticate;
+async function getKindleClient(): Promise<KindeClient> {
+  const kinde = await createKindeClient({
+    client_id: "df28cfcf901448078400d1445f769a11",
+    domain: "https://hyscript7-praedev.eu.kinde.com",
+    redirect_uri: window.location.href,
+    audience: "127.0.0.1",
+  });
+  return kinde; 
+}
+
+export { authenticate, getKindleClient };
