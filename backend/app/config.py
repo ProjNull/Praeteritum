@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from typing import Dict, List
+import secrets
 
 import dotenv
 import jose
@@ -49,16 +50,28 @@ KINDE_API_CLIENT_PARAMS: Dict = {
     "client_secret": KINDE_CLIENT_SECRET,
     "grant_type": GRANT_TYPE,  # client_credentials | authorization_code | authorization_code_with_pkce
     "callback_url": KINDE_REDIRECT_URL,
-    "audience": "127.0.0.1"
+    "audience": "127.0.0.1",
 }
 
+KINDE_AUDIENCE_API: str = os.environ.get("KINDE_AUDIENCE_API", "127.0.0.1")
+if KINDE_AUDIENCE_API != "127.0.0.1":
+    KINDE_API_CLIENT_PARAMS["audience"] = KINDE_AUDIENCE_API
+else:
+    print(
+        "Audience is set as 127.0.0.1, this will not work in a production environment"
+    )
+
 # JWT
-JWT_SECRET: str = os.environ.get("JWT_SECRET", "secret")
+
+# DEPRECATED: We no longer use our own JWTs, instead we use the ones supplied by Kinde
+JWT_SECRET: str = os.environ.get("JWT_SECRET", secrets.token_hex(32))
 try:
+    # DEPRECATED: We no longer use our own JWTs, instead we use the ones supplied by Kinde
     JWT_EXPIRE_IN: timedelta = timedelta(
         seconds=int(os.environ.get("JWT_EXPIRE_IN", "86400"))
     )
 except ValueError:
+    # DEPRECATED: We no longer use our own JWTs, instead we use the ones supplied by Kinde
     JWT_EXPIRE_IN: timedelta = timedelta(seconds=86400)
 
 
