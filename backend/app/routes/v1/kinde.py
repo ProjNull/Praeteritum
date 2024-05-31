@@ -31,15 +31,14 @@ def callback(request: Request):
     kinde_client.fetch_token(authorization_response=str(request.url))
     user = kinde_client.get_user_details()
     user_service.set_kinde_client(user.get("id"), kinde_client)
-    # TODO: Wtf
-    return RedirectResponse("http://localhost:3000/")
+    return RedirectResponse("/?token=" + kinde_client.configuration.access_token)
 
 
 @kinde_router.get("/logout")
 def logout(kinde_client: KindeApiClient = Depends(user_service.get_kinde_client)):
     logout_url = kinde_client.logout(redirect_to="/")
     user_service.drop_kinde_client(kinde_client.get_user_details().get("id"))
-    return RedirectResponse(logout_url, headers={"Authorization": f"Bearer {kinde_client.configuration.access_token}"})
+    return RedirectResponse(logout_url)
 
 
 @kinde_router.get("/token")
