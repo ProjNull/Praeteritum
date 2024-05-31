@@ -33,7 +33,7 @@ if not all([KINDE_CLIENT_ID, KINDE_CLIENT_SECRET, KINDE_HOST, KINDE_REDIRECT_URL
         "Improper KINDE configuration has been provided, please make sure all of the following variables are set: KINDE_CLIENT_ID, KINDE_CLIENT_SECRET, KINDE_HOST, KINDE_REDIRECT_URL"
     )
 
-GRANT_TYPE: GrantType
+GRANT_TYPE: GrantType = "authorization_code"
 match (os.environ.get("GRANT_TYPE", "client_credentials").lower()):
     case "client_credentials":
         GRANT_TYPE = GrantType.CLIENT_CREDENTIALS
