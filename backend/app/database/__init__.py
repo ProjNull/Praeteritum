@@ -14,7 +14,7 @@ elif DB_DRIVER == "sqlite":
     SQLALCHEMY_DATABASE_URL = "sqlite:///./sqlite.db"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, echo=False
+    SQLALCHEMY_DATABASE_URL, echo=False
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -1,56 +1,38 @@
-import createKindeClient, { KindeClient } from "@kinde-oss/kinde-auth-pkce-js";
-
-async function syncState(kinde: KindeClient) {
+async function verifyTokenValditity(token: string): Promise<boolean> {
   const resp = await fetch("/api/v1/kinde/token", {
     headers: {
-      Authorization: `Bearer ${await kinde.getToken()}`,
-    },
-  });
-  if (resp.status != 200 || resp.redirected) {
-    window.location.href = "/api/v1/kinde/login";
-    return;
-  } else {
-    const json = await resp.json();
-    localStorage.setItem("token", json.token);
-  }
-}
-
-async function verifyTokenValidity() {
-  const resp = await fetch("/api/v1/kinde/token", {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+      Authorization: `Bearer ${token ?? ""}`,
     },
   });
   return resp.status == 200 && !resp.redirected;
 }
 
-async function authenticate(redirect_to_home: boolean = true) {
-  const kinde = await createKindeClient({
-    client_id: "df28cfcf901448078400d1445f769a11",
-    domain: "https://hyscript7-praedev.eu.kinde.com",
-    redirect_uri: window.location.origin + "/",
-    audience: "127.0.0.1",
-  });
-  if (await kinde.isAuthenticated()) {
-    if (localStorage.getItem("token") == null || !verifyTokenValidity()) {
-      await syncState(kinde);
+async function resolveAuthenticationToken() {
+  if (window.location.search.includes("token=")) {
+    const token = new URLSearchParams(window.location.search).get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      if (!(await verifyTokenValditity(token))) {
+        alert("wtf");
+        return;
+      }
     }
-    if (redirect_to_home) {
-      setTimeout(() => (window.location.href = "/home"), 1000);
+  } else {
+    const token = localStorage.getItem("token");
+    if (token) {
+      if (!(await verifyTokenValditity(token))) {
+        localStorage.removeItem("token");
+        window.location.href = "/api/v1/kinde/login";
+        return;
+      }
+    } else {
+      window.location.href = "/api/v1/kinde/login";
+      return;
     }
-    return;
   }
-  await kinde.login();
+  if (window.location.href === "/") {
+    window.location.href = "/home";
+  }
 }
 
-async function getKindleClient(): Promise<KindeClient> {
-  const kinde = await createKindeClient({
-    client_id: "df28cfcf901448078400d1445f769a11",
-    domain: "https://hyscript7-praedev.eu.kinde.com",
-    redirect_uri: window.location.href,
-    audience: "127.0.0.1",
-  });
-  return kinde; 
-}
-
-export { authenticate, getKindleClient };
+export { resolveAuthenticationToken };
