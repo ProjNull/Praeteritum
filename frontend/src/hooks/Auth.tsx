@@ -1,3 +1,7 @@
+import { createSignal } from "solid-js";
+
+const [ready, setReady] = createSignal(false);
+
 async function verifyTokenValditity(token: string): Promise<boolean> {
   const resp = await fetch("/api/v1/kinde/token", {
     headers: {
@@ -34,11 +38,12 @@ async function resolveAuthenticationToken() {
       return;
     }
   }
-  if (window.location.pathname === "/") {
-    setTimeout(() => {
+  setTimeout(() => {
+    setReady(true);
+    if (window.location.pathname === "/") {
       window.location.href = "/home";
-    }, 2000);
-  }
+    }
+  }, 500);
 }
 
-export { resolveAuthenticationToken };
+export { resolveAuthenticationToken, ready };

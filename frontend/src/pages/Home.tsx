@@ -1,7 +1,6 @@
 import type { Component } from "solid-js";
 import Navbar from "../components/Navbar";
 import Greeting from "../components/Greeting";
-import LoadingScreen from "./Landing";
 
 const Home: Component = () => {
   return (
