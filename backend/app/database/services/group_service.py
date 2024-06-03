@@ -37,7 +37,7 @@ async def set_owner(db: Session, query: group_schemas.SetOwner):
     db.add(UserToGroup(user_id=query.user_id, group_id=query.group_id, permissions=4))
 
 async def delete_group(db: Session, query: group_schemas.DeleteGroup):
-    if db.query(UserToGroup).filter(UserToGroup.user_id==query.user_id, UserToGroup.group_id==query.group_id).first().permissions == 4:
+    if db.query(UserToGroup).filter(UserToGroup.user_id==query.user_id and UserToGroup.group_id==query.group_id).first().permissions == 4:
         db.query(UserToGroup).filter(UserToGroup.group_id==query.group_id).delete()
         db.query(Groups).filter(Groups.group_id==query.group_id).delete()
     else:

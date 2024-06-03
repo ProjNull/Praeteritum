@@ -19,14 +19,16 @@ class CreateAction(BaseModel):
     description: str
 
 class AsignUsersToAction(BaseModel):
+    user_id: str
     user_ids: List[str]
     action_id: int
 
 class removeUsersFromAction(BaseModel):
+    user_id: str
     user_ids: List[str]
     action_id: int
 
-class RemoveAction(BaseModel):
+class DeleteAction(BaseModel):
     user_id: str
     action_id: int
 
