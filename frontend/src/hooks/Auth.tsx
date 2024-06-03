@@ -12,6 +12,12 @@ async function verifyTokenValditity(token: string): Promise<boolean> {
 }
 
 async function resolveAuthenticationToken() {
+  if (window.location.pathname === "/token") {
+    setTimeout(() => {
+      setReady(true);
+    }, 500);
+    return;
+  }
   if (window.location.search.includes("token=")) {
     const token = new URLSearchParams(window.location.search).get("token");
     if (token) {
