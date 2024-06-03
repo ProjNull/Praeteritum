@@ -15,15 +15,20 @@ services:
       - postgres
       - redis
     environment:
-      - DB_DRIVER=sqlite
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=prae
+      - DB_PASSWORD=password
+      - DB_NAME=prae
       - CACHE_HOST=redis
       - CACHE_PORT=6379
-      - KINDE_CLIENT_ID=1aad3dd1cffc4b43b3cfe0fdad018a51
-      - KINDE_CLIENT_SECRET=6Eao5VoN1AapWltB8bhrxAQwMES70ZatxWWBI6No3W5o6aOjO
-      - KINDE_HOST=https://hyscript7-praedev.eu.kinde.com
-      - KINDE_REDIRECT_URL=http://127.0.0.1:8000/api/v1/kinde/callback
+      - KINDE_CLIENT_ID=youridhere
+      - KINDE_CLIENT_SECRET=yoursecrethere
+      - KINDE_HOST=https://your.prefix.kinde.com
+      - KINDE_REDIRECT_URL=http://127.0.0.1:80/api/v1/kinde/callback
       - KINDE_AUDIENCE_API=127.0.0.1
       - GRANT_TYPE=AUTHORIZATION_CODE
+
 
   postgres:
     image: postgres
@@ -44,7 +49,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     deploy:
-      replicas: 3
+      replicas: 1
     hostname: frontend
     depends_on:
       - backend

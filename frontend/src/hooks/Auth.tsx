@@ -13,7 +13,7 @@ async function resolveAuthenticationToken() {
     if (token) {
       localStorage.setItem("token", token);
       if (!(await verifyTokenValditity(token))) {
-        alert("wtf");
+        alert("An unexpected error has occurred. Please re-login.");
         return;
       }
     }
@@ -30,7 +30,7 @@ async function resolveAuthenticationToken() {
       return;
     }
   }
-  if (window.location.href === "/") {
+  if (window.location.pathname === "/") {
     window.location.href = "/home";
   }
 }
