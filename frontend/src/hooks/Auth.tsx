@@ -22,16 +22,22 @@ async function resolveAuthenticationToken() {
     if (token) {
       if (!(await verifyTokenValditity(token))) {
         localStorage.removeItem("token");
-        window.location.href = "/api/v1/kinde/login";
+        setTimeout(() => {
+          window.location.href = "/api/v1/kinde/login";
+        }, 1000);
         return;
       }
     } else {
-      window.location.href = "/api/v1/kinde/login";
+      setTimeout(() => {
+        window.location.href = "/api/v1/kinde/login";
+      }, 1000);
       return;
     }
   }
   if (window.location.pathname === "/") {
-    window.location.href = "/home";
+    setTimeout(() => {
+      window.location.href = "/home";
+    }, 2000);
   }
 }
 
