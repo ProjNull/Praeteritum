@@ -1,6 +1,6 @@
 FROM node:18 AS build
 
-WORKDIR /opt/prae-fe/frontend
+WORKDIR /opt/prae-fe/
 COPY . .
 
 RUN npm install
