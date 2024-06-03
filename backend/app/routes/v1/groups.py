@@ -9,7 +9,7 @@ groups_router = APIRouter(prefix="/groups")
 def invite_user(body: group_service.group_schemas.InviteUser, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return group_service.invite_user(db, body)
 
-@groups_router.get("/join_group")
+@groups_router.post("/join_group")
 def join_group(body: group_service.group_schemas.JoinGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return group_service.join_group(db, body)
 
@@ -29,6 +29,6 @@ def set_owner(body: group_service.group_schemas.SetOwner, db = Depends(get_sessi
 def delete_group(body: group_service.group_schemas.DeleteGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return group_service.delete_group(db, body)
 
-@groups_router.get("/get_groups")
+@groups_router.post("/get_groups")
 def get_groups(body: group_service.group_schemas.GetGroups, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return group_service.get_groups(db, body)
