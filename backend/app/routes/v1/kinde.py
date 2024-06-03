@@ -16,17 +16,17 @@ async def me(kinde_client=Depends(user_service.get_kinde_client)):
 
 
 @kinde_router.get("/login")
-def login():
+async def login():
     return RedirectResponse(user_service.get_login_url())
 
 
 @kinde_router.get("/register")
-def register():
+async def register():
     return RedirectResponse(user_service.get_register_url())
 
 
 @kinde_router.get("/callback")
-def callback(request: Request):
+async def callback(request: Request):
     kinde_client = KindeApiClient(**KINDE_API_CLIENT_PARAMS)
     kinde_client.fetch_token(authorization_response=str(request.url))
     user = kinde_client.get_user_details()
@@ -35,14 +35,14 @@ def callback(request: Request):
 
 
 @kinde_router.get("/logout")
-def logout(kinde_client: KindeApiClient = Depends(user_service.get_kinde_client)):
+async def logout(kinde_client: KindeApiClient = Depends(user_service.get_kinde_client)):
     logout_url = kinde_client.logout(redirect_to="/")
     user_service.drop_kinde_client(kinde_client.get_user_details().get("id"))
     return RedirectResponse(logout_url)
 
 
 @kinde_router.get("/token")
-def token(payload: Dict = Depends(user_service.get_token_payload)):
+async def token(payload: Dict = Depends(user_service.get_token_payload)):
     kinde_client: KindeApiClient | None = user_service.user_clients.get(payload.get("sub"), None)
     if kinde_client is None:
         return RedirectResponse("/api/v1/kinde/login")
