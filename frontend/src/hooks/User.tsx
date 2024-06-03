@@ -4,9 +4,13 @@ const [fullname, setFullname] = createSignal("");
 const [email, setEmail] = createSignal("");
 
 (async () => {
+  const token = localStorage.getItem("token") ?? "";
+  if (token == "") {
+    return;
+  }
   const resp = await fetch("/api/v1/kinde/me", {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+      Authorization: `Bearer ${token}`,
     },
   });
   if (resp.status != 200 || resp.redirected) {

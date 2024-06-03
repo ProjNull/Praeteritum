@@ -5,23 +5,23 @@ from .services import user_service
 
 teams_router = APIRouter(prefix="/teams")
 
-@teams_router.get("/get_all_teams_in_org")
+@teams_router.post("/get_all_teams_in_org")
 def get_all_teams_in_org(body: team_service.team_schemas.QueryAllTeamsInOrganization, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return team_service.get_all_teams_in_org(db, body)
 
-@teams_router.get("/get_team_by_id")
+@teams_router.post("/get_team_by_id")
 def get_team_by_id(body: team_service.team_schemas.QueryTeam, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return team_service.get_team_by_id(db, body)
 
-@teams_router.get("/get_all_team_member_relations")
+@teams_router.post("/get_all_team_member_relations")
 def get_all_team_member_relations(body: team_service.team_schemas.QueryTeam, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return team_service.get_all_team_member_relations(db, body)
 
-@teams_router.get("/get_team_member_relation_by_id")
+@teams_router.post("/get_team_member_relation_by_id")
 def get_team_member_relation_by_idg(body: team_service.team_schemas.QueryTeamMember, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return team_service.get_team_member_relation_by_id(db, body)
 
-@teams_router.get("/get_user_teams")
+@teams_router.post("/get_user_teams")
 def get_user_teams(body: team_service.team_schemas.QueryAllUsersTeams, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return team_service.get_user_teams(db, body)
 
