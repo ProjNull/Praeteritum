@@ -19,11 +19,11 @@ async def leave_group(body: group_service.group_schemas.LeaveGroup, db = Depends
 
 @groups_router.post("/create_group")
 async def create_group(body: group_service.group_schemas.CreateGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
-    return await group_service.create_group(db, body)
-
-@groups_router.patch("/set_owner")
-async def set_owner(body: group_service.group_schemas.SetOwner, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
-    return await group_service.set_owner(db, body)
+    group = await group_service.create_group(db, body)
+    db.commit()
+    user_id = kinde_client.get_user_details().get("id")
+    await group_service.set_owner(db, group_service.group_schemas.SetOwner(user_id=user_id, group_id=group.group_id))
+    return group
 
 @groups_router.delete("/delete_group")
 async def delete_group(body: group_service.group_schemas.DeleteGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):

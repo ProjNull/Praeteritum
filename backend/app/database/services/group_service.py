@@ -7,26 +7,31 @@ from .. import Session
 from fastapi import HTTPException
 
 async def invite_user(db: Session, query: group_schemas.InviteUser):
-    if db.query(UserToGroup).filter(UserToGroup.user_id == query.user_id_sender and UserToGroup.group_id == query.group_id).first().permissions < 1:
-        if db.query(Invites).filter(Invites.user_id == query.user_id_invited and Invites.group_id == query.group_id).first() is None:
-            if db.query(UserToGroup).filter(UserToGroup.user_id == query.user_id_invited and UserToGroup.group_id == query.group_id).first() is None:
+    if db.query(UserToGroup.permissions).filter(UserToGroup.user_id == query.user_id_sender and UserToGroup.group_id == query.group_id).first() < 1:
+        if db.query(Invites.invite_id).filter(Invites.user_id == query.user_id_invited and Invites.group_id == query.group_id).first() is None:
+            if db.query(UserToGroup.utg_id).filter(UserToGroup.user_id == query.user_id_invited and UserToGroup.group_id == query.group_id).first() is None:
                 db.add(Invites(user_id=query.user_id_invited, group_id=query.group_id))
             else:
-                raise (HTTPException("Invited user is already in this group"))
+                raise HTTPException("Invited user is already in this group")
         else:
-            raise (HTTPException("Invited user is already invited to this group"))
+            raise HTTPException("Invited user is already invited to this group")
     else:
-        raise (HTTPException("Sender is not permited to invite users to this group"))
+        raise HTTPException("Sender is not permited to invite users to this group")
 
 async def join_group(db: Session, query: group_schemas.JoinGroup):
-    if db.query(Invites).filter(Invites.user_id==query.user_id and Invites.group_id==query.group_id).first() is not None:
+    invite_id = db.query(Invites.invite_id).filter(Invites.user_id==query.user_id and Invites.group_id==query.group_id).first()
+    if invite_id is not None:
         db.add(UserToGroup(user_id=query.user_id, group_id=query.group_id))
-        db.query(Invites).filter(Invites.user_id==query.user_id and Invites.group_id==query.group_id).delete()
+        db.query(Invites).filter(Invites.invite_id==invite_id).delete()
     else:
-        raise (HTTPException("User is not invited to this group"))
+        raise HTTPException("User is not invited to this group")
 
 async def leave_group(db: Session, query: group_schemas.LeaveGroup):
-    db.query(UserToGroup).filter(UserToGroup.user_id==query.user_id and UserToGroup.group_id==query.group_id).delete()
+    relation = db.query(UserToGroup).filter(UserToGroup.user_id==query.user_id and UserToGroup.group_id==query.group_id).first()
+    if relation.permissions != 4:
+        db.query(UserToGroup).filter(UserToGroup.utg_id==relation.utg_id).delete()
+    else:
+        raise HTTPException("User is owner of this group, so you can't leave this group, you must transfer ownership or delete it instead")
 
 async def create_group(db: Session, query: group_schemas.CreateGroup) -> Groups:
     group = Groups(name=query.name)
