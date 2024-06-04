@@ -8,15 +8,16 @@ class Group(GroupBase):
     name: str
 
 class InviteUser(BaseModel):
-    user_id_sender: str
-    user_id_invited: str
-    group_id: int
-
-class JoinGroup(BaseModel):
     user_id: str
     group_id: int
 
+class JoinGroup(BaseModel):
+    group_id: int
+
 class LeaveGroup(BaseModel):
+    group_id: int
+
+class RemoveFromGroup(BaseModel):
     user_id: str
     group_id: int
 
@@ -28,8 +29,10 @@ class SetOwner(BaseModel):
     group_id: int
 
 class DeleteGroup(BaseModel):
-    user_id: str
     group_id: int
 
 class GetGroups(BaseModel):
     user_id: str
+
+class GetUsersInGroup(BaseModel):
+    group_id: int
