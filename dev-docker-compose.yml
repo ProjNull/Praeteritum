@@ -75,3 +75,12 @@ services:
     links:
       - backend
       - frontend
+  
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    links:
+      - postgres
