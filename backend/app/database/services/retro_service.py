@@ -5,7 +5,7 @@ from .. import Session
 from .schemas import retro_schemas
 
 
-def create_retro(db: Session, query: retro_schemas.RetroCreate):
+async def create_retro(db: Session, query: retro_schemas.RetroCreate):
     retro = RetroModel(
         query.organization_id,
         query.user_id,
@@ -18,7 +18,7 @@ def create_retro(db: Session, query: retro_schemas.RetroCreate):
         )
 
 
-def get_retro_by_id(db: Session, query: retro_schemas.QueryRetro):
+async def get_retro_by_id(db: Session, query: retro_schemas.QueryRetro):
     return db.query(
             RetroModel
         ).filter(
@@ -26,7 +26,7 @@ def get_retro_by_id(db: Session, query: retro_schemas.QueryRetro):
             ).first()
 
 
-def get_all_retros_in_org(
+async def get_all_retros_in_org(
     db: Session, query: retro_schemas.QueryAllRetrosInOrganization
 ):
     return (
@@ -34,23 +34,23 @@ def get_all_retros_in_org(
                 RetroModel
             )
             .filter(
-                    RetroModel.organization_id == query.organization_id
+                    RetroModel.group_id == query.organization_id
                 )
             .all()
         )
 
 
-def get_all_retros_by_user(db: Session, query: retro_schemas.QueryAllRetrosForUser):
+async def get_all_retros_by_user(db: Session, query: retro_schemas.QueryAllRetrosForUser):
     return db.query(RetroModel).filter(RetroModel.user_id == query.user_id).all()
 
 
-def fetch_retros(db: Session, query: retro_schemas.QueryRetroList):
+async def fetch_retros(db: Session, query: retro_schemas.QueryRetroList):
     return (
         db.query(
                 RetroModel
             )
             .filter(
-                RetroModel.organization_id == query.organization_id
+                RetroModel.group_id == query.organization_id
                 and (
                     False
                     if not query.match_Active
@@ -64,7 +64,7 @@ def fetch_retros(db: Session, query: retro_schemas.QueryRetroList):
             )
 
 
-def delete_retro(db: Session, query: retro_schemas.QueryRetro):
+async def delete_retro(db: Session, query: retro_schemas.QueryRetro):
     db.query(
             RetroModel
         ).filter(
@@ -72,7 +72,7 @@ def delete_retro(db: Session, query: retro_schemas.QueryRetro):
             ).delete()
 
 
-def update_retro(db: Session, query: retro_schemas.RetroUpdate):
+async def update_retro(db: Session, query: retro_schemas.RetroUpdate):
     retro = get_retro_by_id(
         db, 
         retro_schemas.QueryRetro(
@@ -92,12 +92,12 @@ def update_retro(db: Session, query: retro_schemas.RetroUpdate):
     db.add(retro)
 
 
-def get_retro_members(db: Session, query: retro_schemas.QueryRetro):
+async def get_retro_members(db: Session, query: retro_schemas.QueryRetro):
     return db.query(UTRModel).filter(UTRModel.retro_id == query.retro_id).first()
 
 
-def add_user_to_retro(db: Session, query: retro_schemas.UserToRetro):
-    retro = get_retro_by_id(
+async def add_user_to_retro(db: Session, query: retro_schemas.UserToRetro):
+    retro = await get_retro_by_id(
         db, 
         retro_schemas.QueryRetro(
                 retro_id=query.retro_id
@@ -112,7 +112,7 @@ def add_user_to_retro(db: Session, query: retro_schemas.UserToRetro):
         )
 
 
-def remove_user_from_retro(db: Session, query: retro_schemas.UserToRetro):
+async def remove_user_from_retro(db: Session, query: retro_schemas.UserToRetro):
     db.query(
             UTRModel
         ).filter(

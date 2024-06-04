@@ -7,7 +7,10 @@ retrospectives_router = APIRouter(prefix="/retrospectives")
 
 @retrospectives_router.post("/create_retro")
 async def create_retro(body: retro_service.retro_schemas.RetroCreate, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
-    return await retro_service.create_retro(db, body)
+    retro = await retro_service.create_retro(db, body)
+    db.commit()
+    await retro_service.add_user_to_retro(db, retro_service.retro_schmas.UserToRetro(user_id=body.user_id, retro_id=retro.retro_id))
+    return retro
 
 @retrospectives_router.post("/get_retro_by_id")
 async def get_retro_by_id(body: retro_service.retro_schemas.QueryRetro, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):

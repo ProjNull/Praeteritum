@@ -42,7 +42,7 @@ async def remove_user_from_team(body: team_service.team_schemas.TeamMemberBase, 
     return team_service.remove_user_from_team(db, body)
 
 @teams_router.post("/create_team")
-async def create_team(body: team_service.team_schemas.TeamBase, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
+async def create_team(body: team_service.team_schemas.TeamCreate, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     return team_service.create_team(db, body)
 
 @teams_router.delete("/delete_team")

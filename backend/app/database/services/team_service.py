@@ -122,8 +122,8 @@ def update_team_name(db: Session, query: team_schemas.TeamUpdate):
             )
     team.name = new_name
 
-def create_team(db: Session, query: team_schemas.TeamBase):
-    group_id: int = query.group_id
+def create_team(db: Session, query: team_schemas.TeamCreate):
+    group_id: int = query.organization_id
     name: str = query.name
     team: TeamModel = TeamModel(
         group_id=group_id, 
