@@ -44,4 +44,4 @@ async def delete_group(db: Session, query: group_schemas.DeleteGroup):
         raise (HTTPException("User is not the owner of this group"))
     
 async def get_groups(db: Session, query: group_schemas.GetGroups) -> List[Groups]:
-    return db.query(UserToGroup).filter(UserToGroup.user_id==query.user_id).all()
+    return db.query(Groups).join(UserToGroup, Groups.group_id == UserToGroup.group_id) .filter(UserToGroup.user_id==query.user_id).all()
