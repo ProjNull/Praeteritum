@@ -1,8 +1,13 @@
 import { A } from "@solidjs/router";
-import { Component } from "solid-js";
+import { Component, createSignal } from "solid-js";
 import { fullname } from "../hooks/User";
+import SettingsModal from "./Settings";
 
-const UserProfile: Component = () => {
+interface UserProfileProps {
+  settingsSetter: (value: boolean) => void;
+}
+
+const UserProfile: Component<UserProfileProps> = ({ settingsSetter }) => {
   return (
     <div class="dropdown dropdown-end">
       <div class="flex flex-row-reverse align-middle items-center gap-2">
@@ -25,7 +30,7 @@ const UserProfile: Component = () => {
           <a class="justify-between">Profile</a>
         </li>
         <li>
-          <a>Settings</a>
+          <a onClick={() => settingsSetter(true)}>Settings</a>
         </li>
         <li>
           <A href="/token" activeClass="active" end={true}>
@@ -84,7 +89,9 @@ const NavbarLinks: Component = () => {
 };
 
 const Navbar: Component = () => {
+  const [showSettings, setShowSettings] = createSignal(false);
   return (
+    <>
     <nav>
       <div class="navbar bg-base-200">
         <div class="navbar-start">
@@ -121,10 +128,12 @@ const Navbar: Component = () => {
           <a class="btn btn-ghost text-xl">Praeteritum</a>
         </div>
         <div class="navbar-end">
-          <UserProfile />
+          <UserProfile settingsSetter={setShowSettings} />
         </div>
       </div>
     </nav>
+      <SettingsModal setter={setShowSettings} getter={showSettings}/>
+    </>
   );
 };
 

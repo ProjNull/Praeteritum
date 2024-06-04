@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 
 import LoadingScreen from "./pages/Landing";
 import TokenDisplay from "./pages/Token";
+import { getTheme } from "./hooks/Theme";
 
 const Void: Component = () => {
   return <></>;
@@ -15,10 +16,11 @@ const Void: Component = () => {
 await resolveAuthenticationToken();
 
 const App: Component = () => {
+  console.log("Using the " + getTheme() + " theme at initialization.");
   return (
     <>
       {!ready() && (
-        <div class="absolute z-10 top-0 left-0 h-full w-full bg-black backdrop-blur-lg bg-opacity-20">
+        <div class="absolute z-20 top-0 left-0 h-full w-full bg-black backdrop-blur-lg bg-opacity-20">
           <LoadingScreen />
         </div>
       )}

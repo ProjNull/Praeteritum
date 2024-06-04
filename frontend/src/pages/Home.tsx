@@ -1,150 +1,107 @@
-import {
-  createComputed,
-  createEffect,
-  createSignal,
-  Show,
-  type Component,
-} from "solid-js";
+import { type Component } from "solid-js";
 import Navbar from "../components/Navbar";
 import Greeting from "../components/Greeting";
-import { userid } from "../hooks/User";
-import { token } from "../hooks/Auth";
 
-interface Group {
-  group_id: number;
+interface Retro {
+  retro_id: number;
+  stage: number;
+  is_active: boolean;
   name: string;
-}
-
-interface Team {
-  group_id: number;
-  name: string;
-  team_id: number;
-}
-
-interface TeamMember {
+  description: string;
+  is_public: boolean;
+  organization_id: number;
   user_id: string;
-  utt_id: number;
-  team_id: number;
-  permission_level: number;
 }
 
-interface PropsGroups {
-  groups: Group[];
+interface RetroGroupProps {
+  title: string;
+  retros: Retro[];
 }
 
-const Groups: Component<PropsGroups> = (props) => {
+const RetroGroup: Component<RetroGroupProps> = (props) => {
   return (
-    <div class="flex flex-col gap-2">
-      {props.groups.map((group) => (
-        <div>
-          ({group.group_id}) {group.name}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-interface PropsTeams {
-  teams: Team[];
-}
-
-const Teams: Component<PropsTeams> = (props) => {
-  const fetchMembers = async (token: string, team_id: number) => {
-    const response = await fetch(
-      "/api/v1/teams/get_all_team_member_relations",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          team_id: team_id,
-        }),
-      }
-    ).then((response) => response.json());
-    return response;
-  };
-  const [teamMembers, setTeamMembers] = createSignal([] as TeamMember[]);
-  createEffect(() => {
-    fetchMembers(token(), 1).then((data) => setTeamMembers(data));
-  });
-  return (
-    <div class="flex flex-col gap-2">
-      {props.teams.map((team) => (
-        <div>
-          ({team.group_id}:{team.team_id}) {team.name}
-          <div>
-            <ul>
-              {teamMembers().map((member) => (
-                <li>{member.user_id}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      ))}
+    <div class="bg-base-300 m-2 p-2 rounded-lg">
+      <h2 class="text-2xl">{props.title}</h2>
+      <ul class="list-none flex flex-row flex-wrap gap-2">
+        {props.retros.map((retro) => (
+          <li class="border border-white rounded-md p-2">
+            <div class="flex flex-col">
+              <div class="flex flex-row">
+                <div class="inline">
+                  <span class="text-lg">{retro.name}</span>{" "}
+                  <span class="badge">{"Phase " + retro.stage}</span>{" "}
+                </div>
+                <div>
+                  {retro.is_public ? (
+                    <span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width={1.5}
+                        stroke="currentColor"
+                        class="size-6"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                        />
+                      </svg>
+                    </span>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width={1.5}
+                      stroke="currentColor"
+                      class="size-6"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                      />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <div>
+                <p>{retro.description}</p>
+                <p class="italic text-sm">Authored by {retro.user_id}</p>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
 const Home: Component = () => {
-  const [groupsReady, setGroupsReady] = createSignal(false);
-
-  const [groups, setGroups] = createSignal([] as Group[]);
-
-  const [teamsReady, setTeamsReady] = createSignal(false);
-
-  const [teams, setTeams] = createSignal([] as Team[]);
-
-  const fetchGroups = async (userid: string, token: string) => {
-    const response = await fetch("/api/v1/groups/get_groups", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      }
-    });
-    if (response.status != 200 || response.redirected) {
-      return;
-    }
-    await response.json().then((data) => {
-      setGroups(data);
-      setGroupsReady(true);
-    });
-  };
-
-  createComputed(() => {
-    fetchGroups(userid(), token());
-  });
-
-  const fetchTeams = async (token: string, group_id: number) => {
-    const response = await fetch("/api/v1/teams/get_all_teams_in_org", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        organization_id: group_id,
-      }),
-    });
-    if (response.status != 200 || response.redirected) {
-      return;
-    }
-    await response.json().then((data) => {
-      setTeams(data);
-      setTeamsReady(true);
-    });
-  };
-
-  createComputed(() => {
-    if (groups().length <= 0) {
-      return;
-    }
-    const group: Group = groups()[groups().length - 1];
-    fetchTeams(token(), group.group_id);
-  });
-
+  const mockRestros: Retro[] = [
+    {
+      retro_id: 1,
+      stage: 1,
+      is_active: true,
+      name: "Retro 1",
+      description: "Description for Retro 1",
+      is_public: true,
+      organization_id: 1,
+      user_id: "1",
+    },
+    {
+      retro_id: 2,
+      stage: 1,
+      is_active: true,
+      name: "Retro 2",
+      description: "Description for Retro 2",
+      is_public: true,
+      organization_id: 1,
+      user_id: "2",
+    },
+  ];
   return (
     <div>
       <Navbar />
@@ -155,22 +112,20 @@ const Home: Component = () => {
         <div class="grid grid-rows-12 lg:grid-rows-1 lg:grid-cols-12 gap-2 m-2 bg-base-200 rounded-lg p-2 lg:divide-x-2 divide-base-300">
           <div class="lg:col-span-3 row-span-3 lg:row-span-12">
             <div class="text-center text-xl">
-              <h2>Organizations</h2>
+              <h2>...</h2>
             </div>
-            <div>
-              <Show when={groupsReady()} fallback={<div>Loading...</div>}>
-                <Groups groups={groups()} />
-              </Show>
-            </div>
+            <div>...</div>
           </div>
           <div class="lg:col-span-9 row-span-9 lg:row-span-12 flex flex-col p-2 gap-1">
             <div class="text-center text-xl">
-              <h2>Teams</h2>
+              <h2>Retros</h2>
             </div>
             <div>
-              <Show when={teamsReady()} fallback={<div>Loading...</div>}>
-                <Teams teams={teams()} />
-              </Show>
+              <RetroGroup
+                title="My Retros"
+                retros={mockRestros.filter((retro) => retro.user_id === "1")}
+              />
+              <RetroGroup title="All Retros" retros={mockRestros} />
             </div>
           </div>
         </div>
