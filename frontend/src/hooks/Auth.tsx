@@ -1,5 +1,7 @@
 import { createSignal } from "solid-js";
 
+const [authenticated, setAuthenticated] = createSignal(false);
+const [token, setToken] = createSignal("");
 const [ready, setReady] = createSignal(false);
 
 async function verifyTokenValditity(token: string): Promise<boolean> {
@@ -27,6 +29,8 @@ async function resolveAuthenticationToken() {
         return;
       }
     }
+    setToken(token ?? "");
+    setAuthenticated(true);
   } else {
     const token = localStorage.getItem("token");
     if (token) {
@@ -43,7 +47,9 @@ async function resolveAuthenticationToken() {
       }, 1000);
       return;
     }
+    setToken(token);
   }
+  setAuthenticated(true);
   setTimeout(() => {
     setReady(true);
     if (window.location.pathname === "/") {
@@ -52,4 +58,4 @@ async function resolveAuthenticationToken() {
   }, 500);
 }
 
-export { resolveAuthenticationToken, ready };
+export { resolveAuthenticationToken, ready, authenticated, token };
