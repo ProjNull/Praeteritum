@@ -61,7 +61,7 @@ async def get_actions_for_group(db: Session, query: action_schemas.GetActionsFor
     relation = db.query(UserToGroup.utg_id).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
     
     # Not in group
-    if relation is None: raise HTTPException(detail="User is not in this group", status_code=status.HTTP_403_FORBIDDEN)
+    if relation is None: raise HTTPException(detail="User is not in this group", status_code=status.HTTP_404_NOT_FOUND)
     
     return db.query(Actions).join(Retros, Actions.retro_id == Retros.retro_id).filter(Retros.group_id == query.group_id)
     

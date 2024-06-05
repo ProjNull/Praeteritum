@@ -14,9 +14,9 @@ async def invite_user(db: Session, query: group_schemas.InviteUser, user_id: str
     # Not permitted
     if is_permitted < 1: raise HTTPException(detail="Sender is not permited to invite users to this group", status_code=status.HTTP_403_FORBIDDEN)
     # Already invited
-    if is_invited is not None: raise HTTPException(detail="Invited user is already invited to this group", status_code=status.HTTP_403_FORBIDDEN)
+    if is_invited is not None: raise HTTPException(detail="Invited user is already invited to this group", status_code=status.HTTP_409_CONFLICT)
     # Already in group
-    if in_group is not None: raise HTTPException(detail="Invited user is already in this group", status_code=status.HTTP_403_FORBIDDEN)
+    if in_group is not None: raise HTTPException(detail="Invited user is already in this group", status_code=status.HTTP_409_CONFLICT)
     
     db.add(Invites(user_id=query.user_id, group_id=query.group_id))
 
