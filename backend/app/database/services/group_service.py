@@ -21,12 +21,15 @@ async def invite_user(db: Session, query: group_schemas.InviteUser, user_id: str
     db.add(Invites(user_id=query.user_id, group_id=query.group_id))
 
 async def join_group(db: Session, query: group_schemas.JoinGroup, user_id: str):
-    invite_id = db.query(Invites.invite_id).filter(Invites.user_id==user_id and Invites.group_id==query.group_id).first()
+    invite = db.query(Invites).filter(Invites.user_id==user_id and Invites.group_id==query.group_id).first()
     # Not invited
-    if invite_id is None: raise HTTPException(detail="User is not invited to this group", status_code=status.HTTP_403_FORBIDDEN)
+    if invite is None: raise HTTPException(detail="User is not invited to this group", status_code=status.HTTP_403_FORBIDDEN)
     
-    db.add(UserToGroup(user_id=user_id, group_id=query.group_id))
-    db.query(Invites).filter(Invites.invite_id==invite_id).delete()
+    db.add(UserToGroup(user_id, query.group_id, 1))
+    db.query(Invites).filter(Invites.invite_id==invite.invite_id).delete()
+
+async def get_invites(db: Session, user_id: str):
+    return db.query(Invites).filter(Invites.user_id==user_id).all()
 
 async def leave_group(db: Session, query: group_schemas.LeaveGroup, user_id: str):
     relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
@@ -36,14 +39,14 @@ async def leave_group(db: Session, query: group_schemas.LeaveGroup, user_id: str
     db.query(UserToGroup).filter(UserToGroup.utg_id==relation.utg_id).delete()
 
 async def remove_from_group(db: Session, query: group_schemas.RemoveFromGroup, user_id: str):
-    relation = db.query(UserToGroup.permissions).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
+    relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
     relation2 = db.query(UserToGroup).filter(UserToGroup.user_id==query.user_id and UserToGroup.group_id==query.group_id).first()
     # Invoker not in group
     if relation is None: raise HTTPException(detail="User is not in this group", status_code=status.HTTP_403_FORBIDDEN)
     # User to be kicked not in group
     if relation2 is None: raise HTTPException(detail="User to be kicked is not in this group", status_code=status.HTTP_403_FORBIDDEN)
     # Not permitted
-    if relation < relation2.permissions: raise HTTPException(detail="User is not permited to remove this user from this group", status_code=status.HTTP_403_FORBIDDEN)
+    if relation.permissions < relation2.permissions: raise HTTPException(detail="User is not permited to remove this user from this group", status_code=status.HTTP_403_FORBIDDEN)
     
     db.query(UserToGroup).filter(UserToGroup.utg_id==relation2.utg_id).delete()
     
@@ -51,6 +54,15 @@ async def create_group(db: Session, query: group_schemas.CreateGroup) -> Groups:
     group = Groups(name=query.name)
     db.add(group)
     return group
+
+async def update_permissions(db: Session, query: group_schemas.UpdatePermissions, user_id: str):
+    relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
+    relation2 = db.query(UserToGroup).filter(UserToGroup.user_id==query.user_id and UserToGroup.group_id==query.group_id).first()
+
+    if query.permissions >= relation.permissions: raise HTTPException(detail="User is not permited to update this user's permissions to a equal or higher level", status_code=status.HTTP_403_FORBIDDEN)
+
+    new_relation = UserToGroup(query.user_id, query.group_id, query.permissions)
+    db.add(new_relation)
 
 async def set_owner(db: Session, query: group_schemas.SetOwner):
     db.add(UserToGroup(user_id=query.user_id, group_id=query.group_id, permissions=4))
@@ -67,7 +79,7 @@ async def get_groups(db: Session, user_id: str) -> List[Groups]:
     return db.query(Groups).join(UserToGroup, Groups.group_id == UserToGroup.group_id).filter(UserToGroup.user_id==user_id).all()
 
 async def get_users_in_group(db: Session, query: group_schemas.GetUsersInGroup, user_id: str) -> List[str]:
-    has_access = db.query(UserToGroup.user_id).filter(UserToGroup.group_id==query.group_id and UserToGroup.user_id==user_id).first() 
+    has_access = db.query(UserToGroup).filter(UserToGroup.group_id==query.group_id and UserToGroup.user_id==user_id).first() 
     # No access
     if has_access is None: raise HTTPException(detail="User does not have access to this group", status_code=status.HTTP_403_FORBIDDEN)
     

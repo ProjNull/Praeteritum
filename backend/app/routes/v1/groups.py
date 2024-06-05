@@ -15,6 +15,11 @@ async def join_group(body: group_service.group_schemas.JoinGroup, db = Depends(g
     user_id = kinde_client.get_user_details().get("id")
     return await group_service.join_group(db, body, user_id)
 
+@groups_router.get("/get_invites")
+async def get_invites(db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
+    user_id = kinde_client.get_user_details().get("id")
+    return await group_service.get_invites(db, user_id)
+
 @groups_router.delete("/leave_group")
 async def leave_group(body: group_service.group_schemas.LeaveGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     user_id = kinde_client.get_user_details().get("id")
@@ -27,6 +32,11 @@ async def create_group(body: group_service.group_schemas.CreateGroup, db = Depen
     user_id = kinde_client.get_user_details().get("id")
     await group_service.set_owner(db, group_service.group_schemas.SetOwner(user_id=user_id, group_id=group.group_id))
     return group
+
+@groups_router.post("/update_permissions")
+async def update_permissions(body: group_service.group_schemas.UpdatePermissions, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
+    user_id = kinde_client.get_user_details().get("id")
+    return await group_service.update_permissions(db, body, user_id)
 
 @groups_router.delete("/delete_group")
 async def delete_group(body: group_service.group_schemas.DeleteGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
