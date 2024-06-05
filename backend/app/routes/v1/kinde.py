@@ -7,6 +7,7 @@ from kinde_sdk.kinde_api_client import KindeApiClient
 from ...config import KINDE_API_CLIENT_PARAMS
 from .services import user_service
 
+
 kinde_router = APIRouter(prefix="/kinde")
 
 

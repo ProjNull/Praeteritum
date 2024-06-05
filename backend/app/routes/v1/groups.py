@@ -3,12 +3,15 @@ from ...database.services import group_service
 from ...database import get_session
 from .services import user_service
 
+
 groups_router = APIRouter(prefix="/groups")
+
 
 @groups_router.post("/invite_user")
 async def invite_user(body: group_service.group_schemas.InviteUser, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     user_id = kinde_client.get_user_details().get("id")
     return await group_service.invite_user(db, body, user_id)
+
 
 @groups_router.post("/join_group")
 async def join_group(body: group_service.group_schemas.JoinGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
@@ -24,6 +27,7 @@ async def get_invites(db = Depends(get_session), kinde_client=Depends(user_servi
 async def leave_group(body: group_service.group_schemas.LeaveGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     user_id = kinde_client.get_user_details().get("id")
     return await group_service.leave_group(db, body, user_id)
+
 
 @groups_router.post("/create_group")
 async def create_group(body: group_service.group_schemas.CreateGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
@@ -43,10 +47,12 @@ async def delete_group(body: group_service.group_schemas.DeleteGroup, db = Depen
     user_id = kinde_client.get_user_details().get("id")
     return await group_service.delete_group(db, body, user_id)
 
+
 @groups_router.post("/get_groups")
 async def get_groups(db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     user_id = kinde_client.get_user_details().get("id")
     return await group_service.get_groups(db, user_id)
+
 
 @groups_router.post("/get_users_in_group")
 async def get_users_in_group(body: group_service.group_schemas.GetUsersInGroup, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
