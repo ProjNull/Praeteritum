@@ -69,4 +69,4 @@ async def get_users_in_group(db: Session, query: group_schemas.GetUsersInGroup, 
     if db.query(UserToGroup.user_id).filter(UserToGroup.group_id==query.group_id and UserToGroup.user_id==user_id).first() is None:
         raise HTTPException("User does not have access to this group")
     
-    return db.query(UserToGroup.user_id).filter(UserToGroup.group_id==query.group_id).all()
+    return [id.user_id for id in db.query(UserToGroup).filter(UserToGroup.group_id==query.group_id).all()]
