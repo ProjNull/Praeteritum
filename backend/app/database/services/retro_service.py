@@ -108,7 +108,7 @@ def add_user_to_retro(db: Session, query: retro_schemas.AddUserToRetro, user_id:
     is_author = retro.user_id == user_id
     
     # Not found
-    if retro is None: raise HTTPException(detail="Retro not found")
+    if retro is None: raise HTTPException(detail="Retro not found", status_code=status.HTTP_403_FORBIDDEN)
     # Not permitted
     if not is_permited or not is_author: raise HTTPException(detail="User is not permited to add user to this retro", status_code=status.HTTP_403_FORBIDDEN)
     
