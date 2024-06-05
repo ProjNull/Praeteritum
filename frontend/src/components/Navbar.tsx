@@ -114,12 +114,12 @@ const Navbar: Component = () => {
             </div>
             <ul
               tabindex="0"
-              class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+              class="menu menu-sm dropdown-content mt-3 z-[3] p-2 shadow bg-base-100 rounded-box w-52"
             >
               <NavbarLinks />
             </ul>
           </div>
-          <ul class="menu menu-horizontal px-1 hidden lg:flex">
+          <ul class="menu menu-horizontal px-1 hidden z-10 lg:flex">
             <NavbarLinks />
           </ul>
           <a class="btn btn-ghost text-xl flex lg:hidden">Praeteritum</a>

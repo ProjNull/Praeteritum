@@ -14,12 +14,6 @@ async function verifyTokenValditity(token: string): Promise<boolean> {
 }
 
 async function resolveAuthenticationToken() {
-  if (window.location.pathname === "/token") {
-    setTimeout(() => {
-      setReady(true);
-    }, 500);
-    return;
-  }
   if (window.location.search.includes("token=")) {
     const token = new URLSearchParams(window.location.search).get("token");
     if (token) {
@@ -36,12 +30,24 @@ async function resolveAuthenticationToken() {
     if (token) {
       if (!(await verifyTokenValditity(token))) {
         localStorage.removeItem("token");
+        if (window.location.pathname === "/token") {
+          setTimeout(() => {
+            setReady(true);
+          }, 500);
+          return;
+        }
         setTimeout(() => {
           window.location.href = "/api/v1/kinde/login";
         }, 1000);
         return;
       }
     } else {
+      if (window.location.pathname === "/token") {
+        setTimeout(() => {
+          setReady(true);
+        }, 500);
+        return;
+      }
       setTimeout(() => {
         window.location.href = "/api/v1/kinde/login";
       }, 1000);
