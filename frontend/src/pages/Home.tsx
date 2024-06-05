@@ -1,4 +1,5 @@
 import { type Component } from "solid-js";
+import { A } from "@solidjs/router";
 import Navbar from "../components/Navbar";
 import Greeting from "../components/Greeting";
 
@@ -25,15 +26,32 @@ const RetroGroup: Component<RetroGroupProps> = (props) => {
       <ul class="list-none flex flex-row flex-wrap gap-2">
         {props.retros.map((retro) => (
           <li class="border border-white rounded-md p-2">
-            <div class="flex flex-col">
-              <div class="flex flex-row">
-                <div class="inline">
-                  <span class="text-lg">{retro.name}</span>{" "}
-                  <span class="badge">{"Phase " + retro.stage}</span>{" "}
-                </div>
-                <div>
-                  {retro.is_public ? (
-                    <span>
+            <A href={`/retro/${retro.retro_id}`}>
+              <div class="flex flex-col">
+                <div class="flex flex-row">
+                  <div class="inline">
+                    <span class="text-lg">{retro.name}</span>{" "}
+                    <span class="badge">{"Phase " + retro.stage}</span>{" "}
+                  </div>
+                  <div>
+                    {retro.is_public ? (
+                      <span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width={1.5}
+                          stroke="currentColor"
+                          class="size-6"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                          />
+                        </svg>
+                      </span>
+                    ) : (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -45,37 +63,22 @@ const RetroGroup: Component<RetroGroupProps> = (props) => {
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
-                          d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                          d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
                         />
                       </svg>
-                    </span>
-                  ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width={1.5}
-                      stroke="currentColor"
-                      class="size-6"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                      />
-                    </svg>
-                  )}
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p>{retro.description}</p>
+                  <p class="italic text-sm">Authored by {retro.user_id}</p>
                 </div>
               </div>
-              <div>
-                <p>{retro.description}</p>
-                <p class="italic text-sm">Authored by {retro.user_id}</p>
-              </div>
-            </div>
+            </A>
           </li>
         ))}
       </ul>
-    </div>
+    </div >
   );
 };
 

@@ -4,9 +4,10 @@ import { Router, Route } from "@solidjs/router";
 import { resolveAuthenticationToken, ready } from "./hooks/Auth";
 
 import Home from "./pages/Home";
-
+import RetroView from "./pages/RetroView";
 import LoadingScreen from "./pages/Landing";
 import TokenDisplay from "./pages/Token";
+
 import { getTheme } from "./hooks/Theme";
 
 const Void: Component = () => {
@@ -28,6 +29,7 @@ const App: Component = () => {
         <Route path="/" component={Void} />
         <Route path="/home" component={Home} />
         <Route path="/token" component={TokenDisplay} />
+        <Route path="/retro/:retro" component={RetroView} />
       </Router>
     </>
   );
