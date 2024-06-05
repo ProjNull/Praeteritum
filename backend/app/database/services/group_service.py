@@ -7,7 +7,7 @@ from .. import Session
 from fastapi import HTTPException
 
 async def invite_user(db: Session, query: group_schemas.InviteUser, user_id: str):
-    if db.query(UserToGroup.permissions).filter(UserToGroup.user_id == user_id and UserToGroup.group_id == query.group_id).first() < 1:
+    if db.query(UserToGroup).filter(UserToGroup.user_id == user_id and UserToGroup.group_id == query.group_id).first().permissions < 1:
         raise HTTPException("Sender is not permited to invite users to this group")
     
     if db.query(Invites.invite_id).filter(Invites.user_id == query.user_id and Invites.group_id == query.group_id).first() is not None:
