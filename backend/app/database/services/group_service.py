@@ -6,6 +6,7 @@ from .schemas import group_schemas
 from .. import Session
 from fastapi import HTTPException, status
 
+
 async def invite_user(db: Session, query: group_schemas.InviteUser, user_id: str):
     is_permitted = db.query(UserToGroup).filter(UserToGroup.user_id == user_id and UserToGroup.group_id == query.group_id).first().permissions
     is_invited = db.query(Invites).filter(Invites.user_id == query.user_id and Invites.group_id == query.group_id).first()
@@ -20,6 +21,7 @@ async def invite_user(db: Session, query: group_schemas.InviteUser, user_id: str
     
     db.add(Invites(user_id=query.user_id, group_id=query.group_id))
 
+
 async def join_group(db: Session, query: group_schemas.JoinGroup, user_id: str):
     invite_id = db.query(Invites.invite_id).filter(Invites.user_id==user_id and Invites.group_id==query.group_id).first()
     # Not invited
@@ -28,12 +30,14 @@ async def join_group(db: Session, query: group_schemas.JoinGroup, user_id: str):
     db.add(UserToGroup(user_id=user_id, group_id=query.group_id))
     db.query(Invites).filter(Invites.invite_id==invite_id).delete()
 
+
 async def leave_group(db: Session, query: group_schemas.LeaveGroup, user_id: str):
     relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
     # Can't leave > Is owner
     if relation.permissions == 4: raise HTTPException(detail="User is owner of this group, so you can't leave this group, you must transfer ownership or delete it instead", status_code=status.HTTP_403_FORBIDDEN)
     
     db.query(UserToGroup).filter(UserToGroup.utg_id==relation.utg_id).delete()
+
 
 async def remove_from_group(db: Session, query: group_schemas.RemoveFromGroup, user_id: str):
     relation = db.query(UserToGroup.permissions).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
@@ -47,13 +51,16 @@ async def remove_from_group(db: Session, query: group_schemas.RemoveFromGroup, u
     
     db.query(UserToGroup).filter(UserToGroup.utg_id==relation2.utg_id).delete()
     
+    
 async def create_group(db: Session, query: group_schemas.CreateGroup) -> Groups:
     group = Groups(name=query.name)
     db.add(group)
     return group
 
+
 async def set_owner(db: Session, query: group_schemas.SetOwner):
     db.add(UserToGroup(user_id=query.user_id, group_id=query.group_id, permissions=4))
+
 
 async def delete_group(db: Session, query: group_schemas.DeleteGroup, user_id: str):
     is_owner = db.query(UserToGroup).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first().permissions
@@ -65,6 +72,7 @@ async def delete_group(db: Session, query: group_schemas.DeleteGroup, user_id: s
     
 async def get_groups(db: Session, user_id: str) -> List[Groups]:
     return db.query(Groups).join(UserToGroup, Groups.group_id == UserToGroup.group_id).filter(UserToGroup.user_id==user_id).all()
+
 
 async def get_users_in_group(db: Session, query: group_schemas.GetUsersInGroup, user_id: str) -> List[str]:
     has_access = db.query(UserToGroup.user_id).filter(UserToGroup.group_id==query.group_id and UserToGroup.user_id==user_id).first() 

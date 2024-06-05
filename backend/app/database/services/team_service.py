@@ -37,21 +37,25 @@ def get_user_permission_level_in_team(db: Session, query: team_schemas.QueryTeam
     user_id: str = query.user_id
     return get_team_member_relation_by_id(db, team_schemas.QueryTeamMember(team_id=team_id, user_id=user_id)).permission_level
 
+
 def set_user_permission_level_in_team(db: Session, query: team_schemas.TeamMemberUpdate):
     team_id: int = query.team_id
     user_id: str = query.user_id
     permission_level: int = query.permission_level
     get_team_member_relation_by_id(db, team_schemas.QueryTeamMember(team_id=team_id, user_id=user_id)).set_permission_level(permission_level)
 
+
 def add_user_to_team(db: Session, query: team_schemas.TeamMemberBase):
     team_id: int = query.team_id
     user_id: str = query.user_id
     db.add(UserToTeamModel(team_id=team_id, user_id=user_id))
 
+
 def remove_user_from_team(db: Session, query: team_schemas.TeamMemberBase):
     team_id: int = query.team_id
     user_id: str = query.user_id
     get_team_member_relation_by_id(db, team_schemas.QueryTeamMember(team_id=team_id, user_id=user_id)).delete()
+
 
 def update_team_name(db: Session, query: team_schemas.TeamUpdate):
     team_id: int = query.team_id
@@ -60,12 +64,14 @@ def update_team_name(db: Session, query: team_schemas.TeamUpdate):
     team = get_team_by_id(db, team_schemas.QueryTeam(team_id=team_id))
     team.name = new_name
 
+
 def create_team(db: Session, query: team_schemas.TeamBase):
     group_id: int = query.group_id
     name: str = query.name
     
     team: TeamModel = TeamModel(group_id=group_id, name=name)
     db.add(team)
+
 
 def delete_team(db: Session, query: team_schemas.TeamBase):
     team_id: int = query.team_id
