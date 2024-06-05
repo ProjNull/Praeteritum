@@ -36,16 +36,16 @@ async def update_retro(body: retro_service.retro_schemas.UpdateRetro, db = Depen
     return await retro_service.update_retro(db, body, user_id)
 
 @retrospectives_router.post("/get_retro_members")
-async def get_retro_members(body: retro_service.retro_schemas.QueryRetro, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
+async def get_retro_members(body: retro_service.retro_schemas.GetRetroMembers, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     user_id = kinde_client.get_user_details().get("id")
     return await retro_service.get_retro_members(db, body, user_id)
 
 @retrospectives_router.post("/add_user_to_retro")
-async def add_user_to_retro(body: retro_service.retro_schemas.UserToRetro, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
+async def add_user_to_retro(body: retro_service.retro_schemas.AddUserToRetro, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     user_id = kinde_client.get_user_details().get("id")
     return await retro_service.add_user_to_retro(db, body, user_id)
 
 @retrospectives_router.delete("/remove_user_from_retro")
-async def remove_user_from_retro(body: retro_service.retro_schemas.UserToRetro, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
+async def remove_user_from_retro(body: retro_service.retro_schemas.RemoveUserFromRetro, db = Depends(get_session), kinde_client=Depends(user_service.get_kinde_client)):
     user_id = kinde_client.get_user_details().get("id")
     return await retro_service.remove_user_from_retro(db, body, user_id)
