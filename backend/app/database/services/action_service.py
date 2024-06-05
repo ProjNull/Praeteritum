@@ -9,8 +9,8 @@ from .. import Session
 from fastapi import HTTPException, status
 
 async def create_action(db: Session, query: action_schemas.CreateAction, user_id: str):
-    group_id: int = db.query(Retros.group_id).filter(Retros.retro_id==query.retro_id).first()
-    relation = db.query(UserToGroup.permissions).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==group_id).first()
+    group_id: int = db.query(Retros).filter(Retros.retro_id==query.retro_id).first().group_id
+    relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==group_id).first().permissions
     
     # Not in group
     if relation is None: raise HTTPException(detail="User is not in this group", status_code=status.HTTP_403_FORBIDDEN)
@@ -21,8 +21,8 @@ async def create_action(db: Session, query: action_schemas.CreateAction, user_id
 
 
 async def asign_users_to_action(db: Session, query: action_schemas.AsignUsersToAction, user_id: str):
-    group_id: int = db.query(Retros.group_id).join(Actions, Actions.retro_id == Retros.retro_id).filter(Actions.action_id==query.action_id).first()
-    relation = db.query(UserToGroup.permissions).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==group_id).first()
+    group_id: int = db.query(Retros).join(Actions, Actions.retro_id == Retros.retro_id).filter(Actions.action_id==query.action_id).first().group_id
+    relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==group_id).first().permissions
     
     # No access
     if relation is None: raise HTTPException(detail="User does not have access to this action", status_code=status.HTTP_403_FORBIDDEN)
@@ -34,8 +34,8 @@ async def asign_users_to_action(db: Session, query: action_schemas.AsignUsersToA
     
 
 async def remove_users_from_action(db: Session, query: action_schemas.removeUsersFromAction, user_id: str):
-    group_id: int = db.query(Retros.group_id).join(Actions, Actions.retro_id == Retros.retro_id).filter(Actions.action_id==query.action_id).first()
-    relation = db.query(UserToGroup.permissions).filter(UserToGroup.user_id==user_id, UserToGroup.group_id==group_id).first()
+    group_id: int = db.query(Retros).join(Actions, Actions.retro_id == Retros.retro_id).filter(Actions.action_id==query.action_id).first().group_id
+    relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id, UserToGroup.group_id==group_id).first().permissions
     
     # No access
     if relation is None: raise HTTPException(detail="User does not have access to this action", status_code=status.HTTP_403_FORBIDDEN)
@@ -46,7 +46,7 @@ async def remove_users_from_action(db: Session, query: action_schemas.removeUser
     
     
 async def delete_action(db: Session, query: action_schemas.DeleteAction, user_id: str):
-    group_id: int = db.query(Retros.group_id).join(Actions, Actions.retro_id == Retros.retro_id).filter(Actions.action_id==query.action_id).first()
+    group_id: int = db.query(Retros).join(Actions, Actions.retro_id == Retros.retro_id).filter(Actions.action_id==query.action_id).first().group_id
     relation =db.query(UserToGroup).filter(UserToGroup.user_id==user_id, UserToGroup.group_id==group_id).first()
     
     # No access
@@ -58,12 +58,12 @@ async def delete_action(db: Session, query: action_schemas.DeleteAction, user_id
     
     
 async def get_actions_for_group(db: Session, query: action_schemas.GetActionsForGroup, user_id: str) -> list[Actions]:
-    relation = db.query(UserToGroup.utg_id).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
+    relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
     
     # Not in group
     if relation is None: raise HTTPException(detail="User is not in this group", status_code=status.HTTP_404_NOT_FOUND)
     
-    return db.query(Actions).join(Retros, Actions.retro_id == Retros.retro_id).filter(Retros.group_id == query.group_id)
+    return db.query(Actions).join(Retros, Actions.retro_id == Retros.retro_id).filter(Retros.group_id == query.group_id).all()
     
 
 async def get_actions_for_user(db: Session, user_id: str) -> List[Actions]:

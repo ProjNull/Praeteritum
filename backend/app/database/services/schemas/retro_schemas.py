@@ -22,12 +22,12 @@ class FilterRetro(BaseModel):
     is_active: bool | None = Field(default=None)
     public_only: bool | None = Field(default=None)
 
-class GetRetro(RetroBase):
+class GetRetro(BaseModel):
     retro_id: int
 
 class GetAllRetrosInGroup(BaseModel):
     group_id: int
-    filter: FilterRetro
+    filter: FilterRetro | None
 
 class DeleteRetro(BaseModel):
     retro_id: int

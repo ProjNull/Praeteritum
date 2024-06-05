@@ -7,7 +7,7 @@ from .. import Session
 from fastapi import HTTPException, status
 
 async def add_note(db: Session, query: note_schemas.AddNote, user_id: str):
-    is_member = db.query(UserToRetro.utr_id).filter(UserToRetro.user_id == user_id and UserToRetro.retro_id == query.retro_id).first()
+    is_member = db.query(UserToRetro).filter(UserToRetro.user_id == user_id and UserToRetro.retro_id == query.retro_id).first()
     
     # Not a member
     if is_member is None: raise (HTTPException(detail="User is not a member of this retro", status_code=status.HTTP_403_FORBIDDEN))
@@ -37,7 +37,7 @@ async def remove_note(db: Session, query: note_schemas.RemoveNote, user_id: str)
         
 
 async def get_notes(db: Session, query: note_schemas.GetNotes, user_id: str):
-    is_member = db.query(UserToRetro.utr_id).filter(UserToRetro.user_id == user_id and UserToRetro.retro_id == query.retro_id).first()
+    is_member = db.query(UserToRetro).filter(UserToRetro.user_id == user_id and UserToRetro.retro_id == query.retro_id).first()
     
     # is_member
     if is_member is None: raise (HTTPException(detail="User is not a member of this retro", status_code=status.HTTP_403_FORBIDDEN))

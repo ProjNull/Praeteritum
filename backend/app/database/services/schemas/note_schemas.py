@@ -14,7 +14,7 @@ class Note(NoteBase):
     column: int
 
 class AddNote(BaseModel):
-    retro_id: str
+    retro_id: int
     content: str
     column: int
 
