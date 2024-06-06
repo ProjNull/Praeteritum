@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 
 class RetroBase(BaseModel):
     organization_id: int
-    user_id: str
     name: str
     description: str = Field(default="A retro...")
     is_public: bool = Field(default=False)
@@ -32,7 +31,7 @@ class Retro(RetroBase):
 class QueryAllRetrosInOrganization(BaseModel):
     organization_id: int
 
-class QueryRetro(BaseModel):
+class QueryRetro(RetroBase):
     retro_id: int
 
 class QueryAllRetrosForUser(BaseModel):
