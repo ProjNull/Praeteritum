@@ -1,30 +1,203 @@
-import { type Component } from "solid-js";
+import { createEffect, type Component, createComputed, createSignal } from "solid-js";
 import Navbar from "../components/Navbar";
 import { fullname } from "../hooks/User";
 import { useParams } from "@solidjs/router";
+import { token } from "../hooks/Auth";
 
 interface Retro {
   retro_id: number;
   stage: number;
   is_active: boolean;
   name: string;
-  description: string;
+  desc: string;
   is_public: boolean;
-  organization_id: number;
+  group_id: number;
   user_id: string;
+  display_type: number;
+  columns: string[]
 }
 
 interface INote {
   note_id: number;
-  column_index: number;
-  author: string;
+  user_id: string;
+  retro_id: number;
   content: string;
+  column: number;
 }
 
 interface Column {
   column_id: number;
   name: string;
   notes: INote[];
+}
+
+const mockData: Retro[] = [
+  {
+    'retro_id': 1,
+    'group_id': 1,
+    'user_id': "kp_f24f5b13426d40a7b534b2a168b500e0",
+    'name': "My First Retrospective",
+    'desc': "This is my first retrospective",
+    'columns': ["Good", "Neutral", "Bad"],
+    'display_type': 0,
+    'stage': 1,
+    'is_active': true,
+    'is_public': false,
+  }
+];
+
+const mockNotesData: INote[][] = [
+  [
+    {
+      'note_id': 1,
+      'user_id': 'kp_f24f5b13426d40a7b534b2a168b500e0',
+      'retro_id': 1,
+      'content': 'This is my first note',
+      'column': 0
+    },
+    {
+      'note_id': 2,
+      'user_id': 'kp_f24f5b13426d40a7b534b2a168b500e0',
+      'retro_id': 1,
+      'content': 'This note starts in the middle column',
+      'column': 1
+    },
+    {
+      'note_id': 3,
+      'user_id': 'kp_f24f5b13426d40a7b534b2a168b500e0',
+      'retro_id': 1,
+      'content': 'This note also starts in the middle column, below the previous one',
+      'column': 1
+    },
+    {
+      'note_id': 4,
+      'user_id': 'kp_f24f5b13426d40a7b534b2a168b500e0',
+      'retro_id': 1,
+      'content': 'This note starts in the right column',
+      'column': 2
+    }
+  ]
+];
+
+function getMockData(retro_id: number): INote[] {
+  return mockNotesData[retro_id - 1];
+}
+
+function getMockNotesData(retro_id: number): INote[][] {
+  return mockNotesData[retro_id - 1];
+}
+
+
+class Board implements Retro {
+  retro_id: number;
+  group_id: number;
+  user_id: string;
+  name: string;
+  desc: string;
+  columns: string[];
+  display_type: number;
+  stage: number;
+  is_active: boolean;
+  is_public: boolean;
+  notes: INote[];
+  constructor() {
+    /*
+     * Call the async method Board.finalize() to fetch data from remote
+     */
+    this.retro_id = 0;
+    this.group_id = 0;
+    this.user_id = "";
+    this.name = "";
+    this.desc = "";
+    this.columns = [];
+    this.display_type = 0;
+    this.stage = 0;
+    this.is_active = true;
+    this.is_public = false;
+    this.notes = [];
+  }
+  async finalize(retro_id: number, mockData: Retro[]) {
+    /*
+    const response = await fetch("/api/v1/retrospectives/get_retro_by_id", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token()}`,
+      },
+      body: JSON.stringify({
+        retro_id: retro_id,
+      }),
+    });
+    if (response.status == 500) {
+      alert("Got an internal server error while fetching a retro from remote");
+      return;
+    }
+    if (response.status != 200 || response.redirected) {
+      alert("Response status mismatch, got: " + response.status + ", expected: 200\n(Line 66 pages/RetroView.tsx)\nMost likely, the retro either doesn't exist or we don't have permissions.");
+      return;
+    }
+    await response.json().then((data) => {
+      this.retro_id = data.retro_id;
+      this.group_id = data.group_id;
+      this.user_id = data.user_id;
+      this.name = data.name;
+      this.desc = data.desc;
+      this.columns = data.columns;
+      this.display_type = data.display_type;
+      this.stage = data.stage;
+      this.is_active = data.is_active;
+      this.is_public = data.is_public;
+    });
+    */
+    // ! Mock data
+    this.retro_id = mockData[retro_id - 1].retro_id;
+    this.group_id = mockData[retro_id - 1].group_id;
+    this.user_id = mockData[retro_id - 1].user_id;
+    this.name = mockData[retro_id - 1].name;
+    this.desc = mockData[retro_id - 1].desc;
+    this.columns = mockData[retro_id - 1].columns;
+    this.display_type = mockData[retro_id - 1].display_type;
+    this.stage = mockData[retro_id - 1].stage;
+    this.is_active = mockData[retro_id - 1].is_active;
+    this.is_public = mockData[retro_id - 1].is_public;
+  }
+  async fetch_notes(mockNotesData: INote[][]) {
+    /*
+    const response = await fetch("/api/v1/notes/get_notes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token()}`,
+      },
+      body: JSON.stringify({
+        retro_id: this.retro_id,
+      }),
+    });
+    if (response.status == 500) {
+      alert("Got an internal server error while fetching notes from remote for retro " + this.retro_id);
+      return;
+    }
+    if (response.status != 200 || response.redirected) {
+      alert("Response status mismatch, got: " + response.status + ", expected: 200\n(Line 66 pages/RetroView.tsx)\nMost likely, the retro either doesn't exist or we don't have permissions.");
+      return;
+    }
+    await response.json().then((data) => {
+      this.notes = data;
+    });
+    */
+    this.notes = mockNotesData[this.retro_id - 1];
+  }
+  get_column(column_id: number): Column {
+    const column: Column = {
+      column_id: column_id,
+      name: this.columns[column_id],
+      notes: this.notes.filter(note => note.column == column_id),
+    }
+    return column;
+  }
+  get_columns(): Column[] {
+    return this.columns.map((column) => this.get_column(this.columns.indexOf(column)));
+  }
 }
 
 interface NoteProps {
@@ -69,7 +242,7 @@ const NoteControls: Component<NoteProps> = ({ note }) => {
 const Note: Component<NoteProps> = ({ note }) => {
   return <li>
     <div class="flex flex-row gap-1 grow justify-between">
-      <div class="text-sm italic">{note.author}</div>
+      <div class="text-sm italic">{note.user_id}</div>
       <div>
         <NoteControls note={note} />
       </div>
@@ -78,76 +251,39 @@ const Note: Component<NoteProps> = ({ note }) => {
   </li>
 }
 
+function generateRetroDisplay(retro: Board) {
+  return <>{retro.get_columns().map((column: Column) => (
+    <div id={column.name.toLowerCase()} class={"flex flex-col gap-2 grow rounded-lg py-2" + (column.column_id % 2 === (retro.columns.length % 2 === 1 ? 0 : 1) ? " bg-base-300" : "")}>
+      <div class="text-2xl text-center">{column.name}</div>
+      <hr class="border-2 mx-2 border-slate-500 rounded-lg" />
+      <div class="mx-2">
+        <ul class="gap-1 flex flex-col">
+          {column.notes.map((note) => (
+            <div class={"rounded-md p-1 " + (note.column % 2 === 0 ? "bg-secondary" : "bg-primary")}>
+              <Note note={note} />
+            </div>
+          ))}
+        </ul>
+      </div>
+      <div class="mx-2 hidden sm:block">
+        <div class="justify-center w-full flex">
+          <button class="grow btn btn-ghost" onclick={() => { alert("Create is not implemented") }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  ))}</>
+}
+
 const RetroView: Component = () => {
   const params = useParams();
   const retroId = parseInt(params.retro as string);
-  const mockRestros: Retro[] = [
-    {
-      retro_id: 1,
-      stage: 1,
-      is_active: true,
-      name: "Retro 1",
-      description: "Description for Retro 1",
-      is_public: true,
-      organization_id: 1,
-      user_id: "1",
-    },
-    {
-      retro_id: 2,
-      stage: 1,
-      is_active: true,
-      name: "Retro 2",
-      description: "Description for Retro 2",
-      is_public: true,
-      organization_id: 1,
-      user_id: "2",
-    },
-  ];
-  const retroColumns: Column[] = [
-    {
-      column_id: 1,
-      name: "Bad",
-      notes: [
-        {
-          note_id: 1,
-          content: "This is an example note",
-          author: fullname(),
-          column_index: 1,
-        }
-      ],
-    },
-    {
-      column_id: 2,
-      name: "OK",
-      notes: [
-        {
-          note_id: 2,
-          content: "This is another example note",
-          author: fullname(),
-          column_index: 1,
-        }
-      ],
-    },
-    {
-      column_id: 3,
-      name: "Good",
-      notes: [
-        {
-          note_id: 3,
-          content: "This is yet another example note",
-          author: fullname(),
-          column_index: 1,
-        },
-        {
-          note_id: 4,
-          content: "And this one is in the same column as the 3rd one!",
-          author: fullname(),
-          column_index: 2,
-        }
-      ],
-    },
-  ];
-  const retro: Retro = mockRestros.filter((retro) => retro.retro_id == retroId)[0];
+  const retro: Board = new Board();
+  const [retroDisplay, setRetroDisplay] = createSignal(generateRetroDisplay(retro));
+  createEffect(async () => { await retro.finalize(retroId, mockData); await retro.fetch_notes(mockNotesData); console.log(retro); setRetroDisplay(generateRetroDisplay(retro)); });
   return (
     <>
       <Navbar />
@@ -157,35 +293,12 @@ const RetroView: Component = () => {
             <button class="grow btn btn-ghost" onclick={() => { alert("Mobile fullscreen create is not implemented") }}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
+              </svg>Create new note
             </button>
           </div>
         </div>
         <div class="flex flex-row gap-2 flex-wrap m-2">
-          {retroColumns.map((column) => (
-            <div id={column.name.toLowerCase()} class={"flex flex-col gap-2 grow rounded-lg py-2" + (column.column_id % 2 === 1 ? " bg-base-300" : "")}>
-              <div class="text-2xl text-center">{column.name}</div>
-              <hr class="border-2 mx-2 border-slate-500 rounded-lg" />
-              <div class="mx-2">
-                <ul class="gap-1 flex flex-col">
-                  {column.notes.map((note) => (
-                    <div class={"rounded-md p-1 " + (note.column_index % 2 === 0 ? "bg-secondary" : "bg-primary")}>
-                      <Note note={note} />
-                    </div>
-                  ))}
-                </ul>
-              </div>
-              <div class="mx-2 hidden sm:block">
-                <div class="justify-center w-full flex">
-                  <button class="grow btn btn-ghost" onclick={() => { alert("Create is not implemented") }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+          {retroDisplay()}
         </div>
       </main>
     </>
