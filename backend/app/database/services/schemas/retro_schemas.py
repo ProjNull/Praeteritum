@@ -1,19 +1,22 @@
 from pydantic import BaseModel, Field
 
-
 class RetroBase(BaseModel):
     group_id: int
     name: str
     description: str = Field(default="A retro...")
+    columns: list[str]
+    display_type: int
     is_public: bool = Field(default=False)
 
 class Retro(RetroBase):
     retro_id: int
     stage: int
-    is_active: bool
     name: str
     description: str
+    columns: list[str]
+    display_type: int
     is_public: bool
+    is_active: bool
 
 class RetroCreate(RetroBase):
     pass

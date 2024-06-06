@@ -8,11 +8,12 @@ from .schemas import retro_schemas
 
 
 async def create_retro(db: Session, query: retro_schemas.RetroCreate, user_id: str):
+    retro_schemas.RetroCreate()
     relation = db.query(UserToGroup).filter(UserToGroup.group_id==query.group_id and UserToGroup.user_id==user_id).first()
     if relation is None: raise HTTPException(detail="User is not in this group", status_code=status.HTTP_403_FORBIDDEN)
     if relation.permissions < 2: raise HTTPException(detail="User is not permited to create a retro in this group", status_code=status.HTTP_403_FORBIDDEN)
 
-    retro = Retros(query.group_id, user_id, query.name, query.description, query.is_public)
+    retro = Retros(query.group_id, user_id, query.name, query.description, query.columns, query.display_type, query.is_public)
     db.add(retro)
 
 
