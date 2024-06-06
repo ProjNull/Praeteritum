@@ -24,6 +24,11 @@ class RemoveFromGroup(BaseModel):
 class CreateGroup(GroupBase):
     name: str
 
+class UpdatePermissions(BaseModel):
+    user_id: str
+    group_id: int
+    permissions: int
+
 class SetOwner(BaseModel):
     user_id: str
     group_id: int
