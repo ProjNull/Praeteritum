@@ -14,18 +14,15 @@ class Note(NoteBase):
     column: int
 
 class AddNote(BaseModel):
-    user_id: str
-    retro_id: str
+    retro_id: int
     content: str
     column: int
 
 class MoveNote(BaseModel):
-    user_id: str
     note_id: int
     column: int
 
 class RemoveNote(BaseModel):
-    user_id: str
     note_id: int
 
 class GetNotes(BaseModel):

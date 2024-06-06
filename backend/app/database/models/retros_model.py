@@ -9,13 +9,17 @@ class Retros(Base):
     user_id = Column(String, nullable=False)
     name = Column(String(64), nullable=False)
     desc = Column(String(255), nullable=False)
+    columns = Column(ARRAY(String))
+    display_type = Column(Integer, default=1)
     stage = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
     is_public = Column(Boolean, default=False)
 
-    def __init__(self, group_id, user_id, name, desc: str = "A retro...", is_public: bool = False):
+    def __init__(self, group_id, user_id, name, desc: str, columns: list[str], display_type: int, is_public: bool = False):
         self.group_id = group_id
         self.user_id = user_id
         self.name = name
         self.desc = desc
+        self.columns = columns
+        self.display_type = display_type
         self.is_public = is_public
