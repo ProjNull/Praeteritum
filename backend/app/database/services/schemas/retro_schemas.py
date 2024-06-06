@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import List
 
 class RetroBase(BaseModel):
     group_id: int
@@ -13,7 +14,7 @@ class Retro(RetroBase):
     stage: int
     name: str
     description: str
-    columns: list[str]
+    columns: List[str]
     display_type: int
     is_public: bool
     is_active: bool
