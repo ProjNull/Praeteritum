@@ -14,6 +14,7 @@ async def create_retro(db: Session, query: retro_schemas.RetroCreate, user_id: s
 
     retro = Retros(query.group_id, user_id, query.name, query.description, query.columns, query.display_type, query.is_public)
     db.add(retro)
+    return retro
 
 
 async def get_retro_by_id(db: Session, query: retro_schemas.GetRetro, user_id: str):
