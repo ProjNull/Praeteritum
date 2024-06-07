@@ -1,4 +1,4 @@
-import { createComputed, createSignal, For, type Component } from "solid-js";
+import { createComputed, createEffect, createSignal, For, type Component } from "solid-js";
 import { A } from "@solidjs/router";
 import Navbar from "../components/Navbar";
 import Greeting from "../components/Greeting";
@@ -31,6 +31,66 @@ interface Organization {
 interface CreateOrganizationProps {
   callbackFunc: () => void;
 }
+
+interface Invite {
+  invite_id: number;
+  group_id: number;
+  user_id: string;
+}
+
+const ViewInvites: Component<CreateOrganizationProps> = ({ callbackFunc }) => {
+  const [invites, setInvites] = createSignal([] as Invite[]);
+
+  createEffect(async () => {
+    const response = await fetch("/api/v1/groups/get_invites", {
+      headers: {
+        Authorization: `Bearer ${token()}`,
+      },
+    });
+    const data = await response.json();
+    setInvites(data);
+  });
+
+  const acceptInvite = async (invite: Invite) => {
+    const response = await fetch("/api/v1/groups/join_group", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token()}`,
+      },
+      body: JSON.stringify({ group_id: invite.group_id }),
+    });
+    if (response.status != 200 || response.redirected) {
+      console.log(await response.text());
+      alert("Something went wrong");
+      location.reload();
+      return;
+    }
+    await callbackFunc();
+  };
+
+  const inviteList = invites();
+
+  return inviteList.length == 0 ? <></> : (
+    <div class="card bg-base-100 shadow-xl">
+      <h2 class="card-title">Invites</h2>
+      <ul class="list-none">
+        <For each={inviteList}>
+          {(invite) => (
+            <li class="card m-2 bg-base-200">
+              <div class="card-body">
+                <h3 class="card-title">{invite.group_id}</h3>
+                <button class="btn" onClick={() => acceptInvite(invite)}>
+                  Accept
+                </button>
+              </div>
+            </li>
+          )}
+        </For>
+      </ul>
+    </div>
+  );
+};
 
 const CreateOrganization: Component<CreateOrganizationProps> = ({
   callbackFunc,
@@ -79,6 +139,7 @@ const CreateOrganization: Component<CreateOrganizationProps> = ({
     </div>
   );
 };
+
 
 const RetroGroup: Component<RetroGroupProps> = (props) => {
   return (
@@ -238,6 +299,11 @@ const Home: Component = () => {
                 )}
               </For>
               <CreateOrganization
+                callbackFunc={async () =>
+                  fetchGroups(setOrganizations, setCurrentOrganizationId)
+                }
+              />
+              <ViewInvites
                 callbackFunc={async () =>
                   fetchGroups(setOrganizations, setCurrentOrganizationId)
                 }
