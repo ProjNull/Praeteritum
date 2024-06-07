@@ -15,10 +15,24 @@ async def create_retro(db: Session, query: retro_schemas.RetroCreate, user_id: s
             UserToGroup.user_id == user_id
         ).first()
     
-    if relation is None: raise HTTPException(detail="User is not in this group", status_code=status.HTTP_403_FORBIDDEN)
-    if relation.permissions < 2: raise HTTPException(detail="User is not permited to create a retro in this group", status_code=status.HTTP_403_FORBIDDEN)
+    if relation is None: raise HTTPException(
+        detail="User is not in this group", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
+    if relation.permissions < 2: raise HTTPException(
+        detail="User is not permited to create a retro in this group", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
 
-    retro = Retros(query.group_id, user_id, query.name, query.description, query.columns, query.display_type, query.is_public)
+    retro = Retros(
+        query.group_id, 
+        user_id, 
+        query.name, 
+        query.description, 
+        query.columns, 
+        query.display_type, 
+        query.is_public
+    )
     db.add(retro)
     return retro
 
@@ -44,11 +58,17 @@ async def get_retro_by_id(db: Session, query: retro_schemas.GetRetro, user_id: s
         ).first()
     
     # Not found
-    if retro is None: raise HTTPException(detail="Retro not found", status_code=status.HTTP_404_NOT_FOUND)
+    if retro is None: raise HTTPException(
+        detail="Retro not found", 
+        status_code=status.HTTP_404_NOT_FOUND
+    )
     # Not in retro
     if access is None:
         if isPermited is None:
-            raise HTTPException(detail="User is not in this retro", status_code=status.HTTP_403_FORBIDDEN)
+            raise HTTPException(
+                detail="User is not in this retro", 
+                status_code=status.HTTP_403_FORBIDDEN
+            )
     
     return retro
 
@@ -74,9 +94,15 @@ async def get_all_retros_in_group(db: Session, query: retro_schemas.GetAllRetros
         )
     
     # Is in group
-    if relation is None: raise HTTPException(detail="User is not in this group", status_code=status.HTTP_403_FORBIDDEN)
+    if relation is None: raise HTTPException(
+        detail="User is not in this group", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
     # Not permitted
-    if retros.first() is None and relation.permissions < 2: raise HTTPException(detail="User does not have access to this retro", status_code=status.HTTP_403_FORBIDDEN)
+    if retros.first() is None and relation.permissions < 2: raise HTTPException(
+        detail="User does not have access to this retro", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
 
     if query.filter is not None:
         if query.filter.public_only:
@@ -135,11 +161,17 @@ async def delete_retro(db: Session, query: retro_schemas.DeleteRetro, user_id: s
         ).first().user_id == user_id
     
     # Not found
-    if retro.first() is None: raise HTTPException(detail="Retro not found", status_code=status.HTTP_403_FORBIDDEN)
+    if retro.first() is None: raise HTTPException(
+        detail="Retro not found", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
     # Not permitted
     if not isPermited:
         if not isAuthor:
-            raise HTTPException(detail="User is not permited to delete this retro", status_code=status.HTTP_403_FORBIDDEN)
+            raise HTTPException(
+                detail="User is not permited to delete this retro", 
+                status_code=status.HTTP_403_FORBIDDEN
+            )
     
     retro.delete()
 
@@ -161,9 +193,15 @@ async def update_retro(db: Session, query: retro_schemas.UpdateRetro, user_id: s
     is_author = retro.user_id == user_id
     
     # Not found
-    if retro is None: raise HTTPException(detail="Retro not found", status_code=status.HTTP_404_NOT_FOUND)
+    if retro is None: raise HTTPException(
+        detail="Retro not found", 
+        status_code=status.HTTP_404_NOT_FOUND
+    )
     # Not permitted
-    if not is_permited or not is_author: raise HTTPException(detail="User is not permited to update this retro", status_code=status.HTTP_403_FORBIDDEN)
+    if not is_permited or not is_author: raise HTTPException(
+        detail="User is not permited to update this retro", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
 
     # Spaghetti
     if query.name is not None: retro.name = query.name
@@ -204,7 +242,10 @@ async def get_retro_members(db: Session, query: retro_schemas.GetRetroMembers, u
     if not is_asigned: 
         if not is_permited:
             if not is_author:
-                raise HTTPException(detail="User is not permited to get this retro members", status_code=status.HTTP_403_FORBIDDEN)
+                raise HTTPException(
+                    detail="User is not permited to get this retro members", 
+                    status_code=status.HTTP_403_FORBIDDEN
+                )
     
     return [i.user_id for i in db.query(
             UserToRetro
@@ -229,9 +270,15 @@ async def add_user_to_retro(db: Session, query: retro_schemas.AddUserToRetro, us
     is_author = retro.user_id == user_id
     
     # Not found
-    if retro is None: raise HTTPException(detail="Retro not found", status_code=status.HTTP_404_NOT_FOUND)
+    if retro is None: raise HTTPException(
+        detail="Retro not found", 
+        status_code=status.HTTP_404_NOT_FOUND
+    )
     # Not permitted
-    if not is_permited or not is_author: raise HTTPException(detail="User is not permited to add user to this retro", status_code=status.HTTP_403_FORBIDDEN)
+    if not is_permited or not is_author: raise HTTPException(
+        detail="User is not permited to add user to this retro", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
     
     db.add(
         UserToRetro(
@@ -257,8 +304,14 @@ async def remove_user_from_retro(db: Session, query: retro_schemas.RemoveUserFro
     
     is_author = retro.user_id == user_id
     
-    if retro is None: raise HTTPException(detail="Retro not found", status_code=status.HTTP_404_NOT_FOUND)
-    if not is_permited or not is_author: raise HTTPException(detail="User is not permited to add user to this retro", status_code=status.HTTP_403_FORBIDDEN)
+    if retro is None: raise HTTPException(
+        detail="Retro not found", 
+        status_code=status.HTTP_404_NOT_FOUND
+    )
+    if not is_permited or not is_author: raise HTTPException(
+        detail="User is not permited to add user to this retro", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
     
     db.query(
             UserToRetro

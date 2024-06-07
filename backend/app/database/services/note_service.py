@@ -15,7 +15,10 @@ async def add_note(db: Session, query: note_schemas.AddNote, user_id: str):
         ).first()
     
     # Not a member
-    if is_member is None: raise (HTTPException(detail="User is not a member of this retro", status_code=status.HTTP_403_FORBIDDEN))
+    if is_member is None: raise HTTPException(
+        detail="User is not a member of this retro", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
         
     db.add(
         Notes(
@@ -50,7 +53,10 @@ async def move_note(db: Session, query: note_schemas.MoveNote, user_id: str):
     )
     
     # Is permitted 
-    if is_permitted > 1: raise (HTTPException(detail="User is not permited to move this note", status_code=status.HTTP_403_FORBIDDEN))
+    if is_permitted > 1: raise HTTPException(
+        detail="User is not permited to move this note", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
     note.column = query.column
     db.add(note)
 
@@ -76,7 +82,10 @@ async def remove_note(db: Session, query: note_schemas.RemoveNote, user_id: str)
     )
     
     # Is permitted
-    if is_permitted > 1: raise (HTTPException(detail="User is not permited to remove this note", status_code=status.HTTP_403_FORBIDDEN))
+    if is_permitted > 1: raise HTTPException(
+        detail="User is not permited to remove this note", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
 
     db.query(
             Notes
@@ -94,7 +103,10 @@ async def get_notes(db: Session, query: note_schemas.GetNotes, user_id: str):
         ).first()
     
     # is_member
-    if is_member is None: raise (HTTPException(detail="User is not a member of this retro", status_code=status.HTTP_403_FORBIDDEN))
+    if is_member is None: raise HTTPException(
+            detail="User is not a member of this retro", 
+            status_code=status.HTTP_403_FORBIDDEN
+        )
     
     return db.query(
             Notes
