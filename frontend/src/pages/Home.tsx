@@ -15,7 +15,7 @@ interface Retro {
   group_id: number;
   user_id: string;
   display_type: number;
-  columns: string[]
+  columns: string[];
 }
 
 interface RetroGroupProps {
@@ -82,7 +82,7 @@ const RetroGroup: Component<RetroGroupProps> = (props) => {
           </li>
         ))}
       </ul>
-    </div >
+    </div>
   );
 };
 
@@ -103,15 +103,15 @@ const Home: Component = () => {
         group_id: currentOrganizationId(),
         filter: {
           is_active: true,
-          public_only: false
-        }
+          public_only: false,
+        },
       }),
-    })
+    });
     if (res.ok) {
       const data = await res.json();
       setRetrosInOrg(data);
     }
-  })
+  });
   return (
     <div>
       <Navbar />
@@ -133,7 +133,9 @@ const Home: Component = () => {
             <div>
               <RetroGroup
                 title="My Retros"
-                retros={retrosInOrg().filter((retro) => retro.user_id === userid())}
+                retros={retrosInOrg().filter(
+                  (retro) => retro.user_id === userid()
+                )}
               />
               <RetroGroup title="All Retros" retros={retrosInOrg()} />
             </div>
