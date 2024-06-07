@@ -1,17 +1,21 @@
-import { type Component } from "solid-js";
+import { createComputed, createSignal, type Component } from "solid-js";
 import { A } from "@solidjs/router";
 import Navbar from "../components/Navbar";
 import Greeting from "../components/Greeting";
+import { authenticated, token } from "../hooks/Auth";
+import { userid } from "../hooks/User";
 
 interface Retro {
   retro_id: number;
   stage: number;
   is_active: boolean;
   name: string;
-  description: string;
+  desc: string;
   is_public: boolean;
-  organization_id: number;
+  group_id: number;
   user_id: string;
+  display_type: number;
+  columns: string[]
 }
 
 interface RetroGroupProps {
@@ -34,7 +38,7 @@ const RetroGroup: Component<RetroGroupProps> = (props) => {
                     <span class="badge">{"Phase " + retro.stage}</span>{" "}
                   </div>
                   <div>
-                    {retro.is_public ? (
+                    {!retro.is_public ? (
                       <span>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -70,7 +74,7 @@ const RetroGroup: Component<RetroGroupProps> = (props) => {
                   </div>
                 </div>
                 <div>
-                  <p>{retro.description}</p>
+                  <p>{retro.desc}</p>
                   <p class="italic text-sm">Authored by {retro.user_id}</p>
                 </div>
               </div>
@@ -83,28 +87,31 @@ const RetroGroup: Component<RetroGroupProps> = (props) => {
 };
 
 const Home: Component = () => {
-  const mockRestros: Retro[] = [
-    {
-      retro_id: 1,
-      stage: 1,
-      is_active: true,
-      name: "Retro 1",
-      description: "Description for Retro 1",
-      is_public: true,
-      organization_id: 1,
-      user_id: "1",
-    },
-    {
-      retro_id: 2,
-      stage: 1,
-      is_active: true,
-      name: "Retro 2",
-      description: "Description for Retro 2",
-      is_public: true,
-      organization_id: 1,
-      user_id: "2",
-    },
-  ];
+  const [currentOrganizationId, setCurrentOrganizationId] = createSignal(1);
+  const [retrosInOrg, setRetrosInOrg] = createSignal<Retro[]>([]);
+  createComputed(async () => {
+    if (!authenticated()) {
+      return;
+    }
+    const res = await fetch("/api/v1/retrospectives/get_all_retros_in_group", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token()}`,
+      },
+      body: JSON.stringify({
+        group_id: currentOrganizationId(),
+        filter: {
+          is_active: true,
+          public_only: false
+        }
+      }),
+    })
+    if (res.ok) {
+      const data = await res.json();
+      setRetrosInOrg(data);
+    }
+  })
   return (
     <div>
       <Navbar />
@@ -126,9 +133,9 @@ const Home: Component = () => {
             <div>
               <RetroGroup
                 title="My Retros"
-                retros={mockRestros.filter((retro) => retro.user_id === "1")}
+                retros={retrosInOrg().filter((retro) => retro.user_id === userid())}
               />
-              <RetroGroup title="All Retros" retros={mockRestros} />
+              <RetroGroup title="All Retros" retros={retrosInOrg()} />
             </div>
           </div>
         </div>
