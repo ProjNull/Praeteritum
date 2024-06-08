@@ -59,9 +59,9 @@ async def join_group(db: Session, query: group_schemas.JoinGroup, user_id: str):
         ).filter(
             Invites.user_id == user_id and 
             Invites.group_id == query.group_id
-        ).first()
+        )
     # Not invited
-    if invite is None: raise HTTPException(
+    if invite.first() is None: raise HTTPException(
         detail="User is not invited to this group", 
         status_code=status.HTTP_403_FORBIDDEN
     )
@@ -74,11 +74,7 @@ async def join_group(db: Session, query: group_schemas.JoinGroup, user_id: str):
         )
     )
     
-    db.query(
-            Invites
-        ).filter(
-            Invites.invite_id == invite.invite_id
-        ).delete()
+    invite.delete()
 
 async def get_invites(db: Session, user_id: str):
     return db.query(
