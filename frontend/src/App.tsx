@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import RetroView from "./pages/RetroView";
 import LoadingScreen from "./pages/Landing";
 import TokenDisplay from "./pages/Token";
+import Group from "./pages/Group";
 
 import { getTheme } from "./hooks/Theme";
 
@@ -30,6 +31,7 @@ const App: Component = () => {
         <Route path="/home" component={Home} />
         <Route path="/token" component={TokenDisplay} />
         <Route path="/retro/:retro" component={RetroView} />
+        <Route path="/group/:group" component={Group} />
       </Router>
     </>
   );
