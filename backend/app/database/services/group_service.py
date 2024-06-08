@@ -11,26 +11,32 @@ async def invite_user(db: Session, query: group_schemas.InviteUser, user_id: str
     is_permitted = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id,
             UserToGroup.group_id == query.group_id
-        ).first().permissions
+        ).first()
     
     is_invited = db.query(
             Invites
         ).filter(
-            Invites.user_id == query.user_id and 
+            Invites.user_id == query.user_id,
             Invites.group_id == query.group_id
         ).first()
     
     in_group = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == query.user_id and 
+            UserToGroup.user_id == query.user_id,
             UserToGroup.group_id == query.group_id
         ).first()
     
+    # Sender not in group
+    if is_permitted is None: raise HTTPException(
+        detail="Sender is not in this group", 
+        status_code=status.HTTP_403_FORBIDDEN
+    )
+
     # Not permitted
-    if is_permitted < 1: raise HTTPException(
+    if is_permitted.permissions < 1: raise HTTPException(
         detail="Sender is not permited to invite users to this group", 
         status_code=status.HTTP_403_FORBIDDEN
     )
@@ -57,7 +63,7 @@ async def join_group(db: Session, query: group_schemas.JoinGroup, user_id: str):
     invite = db.query(
             Invites
         ).filter(
-            Invites.user_id == user_id and 
+            Invites.user_id == user_id,
             Invites.group_id == query.group_id
         )
     # Not invited
