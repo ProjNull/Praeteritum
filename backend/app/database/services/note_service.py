@@ -10,7 +10,7 @@ async def add_note(db: Session, query: note_schemas.AddNote, user_id: str):
     is_member = db.query(
             UserToRetro
         ).filter(
-            UserToRetro.user_id == user_id and 
+            UserToRetro.user_id == user_id, 
             UserToRetro.retro_id == query.retro_id
         ).first()
     
@@ -47,7 +47,7 @@ async def move_note(db: Session, query: note_schemas.MoveNote, user_id: str):
         db.query(
                 UserToGroup
             ).filter(
-                UserToGroup.user_id == user_id and 
+                UserToGroup.user_id == user_id, 
                 UserToGroup.group_id == group_id).first(
             ).permissions
     )
@@ -72,7 +72,7 @@ async def remove_note(db: Session, query: note_schemas.RemoveNote, user_id: str)
         db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == db.query(
                 Retros
             ).filter(
@@ -98,7 +98,7 @@ async def get_notes(db: Session, query: note_schemas.GetNotes, user_id: str):
     is_member = db.query(
             UserToRetro
         ).filter(
-            UserToRetro.user_id == user_id and 
+            UserToRetro.user_id == user_id, 
             UserToRetro.retro_id == query.retro_id
         ).first()
     

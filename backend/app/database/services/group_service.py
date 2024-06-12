@@ -94,7 +94,7 @@ async def leave_group(db: Session, query: group_schemas.LeaveGroup, user_id: str
     relation = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == query.group_id
         ).first()
     
@@ -116,14 +116,14 @@ async def remove_from_group(db: Session, query: group_schemas.RemoveFromGroup, u
     relation = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == query.group_id
         ).first()
     
     relation2 = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == query.user_id and 
+            UserToGroup.user_id == query.user_id, 
             UserToGroup.group_id==query.group_id
         ).first()
         
@@ -152,7 +152,7 @@ async def create_group(db: Session, query: group_schemas.CreateGroup) -> Groups:
     return group
 
 async def update_permissions(db: Session, query: group_schemas.UpdatePermissions, user_id: str):
-    relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id and UserToGroup.group_id==query.group_id).first()
+    relation = db.query(UserToGroup).filter(UserToGroup.user_id==user_id, UserToGroup.group_id==query.group_id).first()
 
     if query.permissions >= relation.permissions: raise HTTPException(
             detail="User is not permited to update this user's permissions to a equal or higher level", 
@@ -176,7 +176,7 @@ async def delete_group(db: Session, query: group_schemas.DeleteGroup, user_id: s
     is_owner = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == query.group_id
         ).first().permissions
         
@@ -213,7 +213,7 @@ async def get_users_in_group(db: Session, query: group_schemas.GetUsersInGroup, 
     has_access = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.group_id == query.group_id and 
+            UserToGroup.group_id == query.group_id, 
             UserToGroup.user_id == user_id
         ).first() 
     

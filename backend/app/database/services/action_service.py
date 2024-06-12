@@ -18,7 +18,7 @@ async def create_action(db: Session, query: action_schemas.CreateAction, user_id
     relation = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == group_id
         ).first().permissions
     
@@ -55,7 +55,7 @@ async def asign_users_to_action(db: Session, query: action_schemas.AsignUsersToA
     relation = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == group_id
         ).first().permissions
     
@@ -112,7 +112,7 @@ async def remove_users_from_action(db: Session, query: action_schemas.removeUser
     db.query(
             UserToAction
         ).filter(
-            UserToAction.user_id in query.user_ids and 
+            UserToAction.user_id in query.user_ids, 
             UserToAction.action_id == query.action_id
         ).delete()
     
@@ -156,7 +156,7 @@ async def get_actions_for_group(db: Session, query: action_schemas.GetActionsFor
     relation = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == query.group_id
         ).first()
     

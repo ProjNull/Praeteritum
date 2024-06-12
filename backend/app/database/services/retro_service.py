@@ -11,7 +11,7 @@ async def create_retro(db: Session, query: retro_schemas.RetroCreate, user_id: s
     relation = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.group_id == query.group_id and 
+            UserToGroup.group_id == query.group_id, 
             UserToGroup.user_id == user_id
         ).first()
     
@@ -46,14 +46,14 @@ async def get_retro_by_id(db: Session, query: retro_schemas.GetRetro, user_id: s
     isPermited = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.group_id == retro.group_id and 
+            UserToGroup.group_id == retro.group_id, 
             UserToGroup.user_id == user_id
         ).first().permissions > 1
         
     access = db.query(
             UserToRetro
         ).filter(
-            UserToRetro.user_id == user_id and 
+            UserToRetro.user_id == user_id, 
             UserToRetro.retro_id == retro.retro_id
         ).first()
     
@@ -76,7 +76,7 @@ async def get_all_retros_in_group(db: Session, query: retro_schemas.GetAllRetros
     relation = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.group_id == query.group_id and 
+            UserToGroup.group_id == query.group_id, 
             UserToGroup.user_id == user_id
         ).first()
     retros = db.query(
@@ -86,7 +86,7 @@ async def get_all_retros_in_group(db: Session, query: retro_schemas.GetAllRetros
             Retros.retro_id == UserToRetro.retro_id, 
             isouter=True
         ).filter(
-        Retros.group_id == query.group_id and 
+        Retros.group_id == query.group_id, 
             (
                 UserToRetro.user_id == user_id or 
                 relation.permissions > 1
@@ -150,7 +150,7 @@ async def delete_retro(db: Session, query: retro_schemas.DeleteRetro, user_id: s
     isPermited = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == group_id
         ).first().permissions > 1
     
@@ -186,7 +186,7 @@ async def update_retro(db: Session, query: retro_schemas.UpdateRetro, user_id: s
     is_permited = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == retro.group_id
         ).first().permissions > 1
     
@@ -223,7 +223,7 @@ async def get_retro_members(db: Session, query: retro_schemas.GetRetroMembers, u
     is_permited = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == retro.group_id
         ).first().permissions > 1
         
@@ -264,7 +264,7 @@ async def add_user_to_retro(db: Session, query: retro_schemas.AddUserToRetro, us
     is_permited = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == retro.group_id
         ).first().permissions > 1
     is_author = retro.user_id == user_id
@@ -298,7 +298,7 @@ async def remove_user_from_retro(db: Session, query: retro_schemas.RemoveUserFro
     is_permited = db.query(
             UserToGroup
         ).filter(
-            UserToGroup.user_id == user_id and 
+            UserToGroup.user_id == user_id, 
             UserToGroup.group_id == retro.group_id
         ).first().permissions > 1
     
