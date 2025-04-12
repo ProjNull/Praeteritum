@@ -1,0 +1,13 @@
+asyncpg==0.30.0
+coverage==7.8.0
+fastapi==0.115.12
+fastapi-cli==0.0.7
+httpx==0.28.1
+pydantic==2.11.3
+pytest==8.3.5
+pytest-cov==6.1.1
+pytest-fixtures==0.1.0
+python-dotenv==1.1.0
+redis==5.2.1
+sqlmodel==0.0.24
+uvicorn==0.34.0

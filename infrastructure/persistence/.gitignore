@@ -1,0 +1,4 @@
+kafka-data/
+keycloak-data/
+postgres-data/
+redis-data/

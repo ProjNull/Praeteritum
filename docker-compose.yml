@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: bitnami/postgresql
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRESQL_PASSWORD=password
+    volumes:
+      - ./infrastructure/persistence/postgres-data:/bitnami/postgresql
+  redis:
+    image: bitnami/redis
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=password
+    volumes:
+      - ./infrastructure/persistence/redis-data:/bitnami/redis
+  keycloak:
+    image: bitnami/keycloak
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_VENDOR=postgres
+      - DB_ADDR=postgres
+      - DB_PORT_NUMBER=5432
+      - DB_DATABASE=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=password
