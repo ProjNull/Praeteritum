@@ -1,5 +1,7 @@
 import { createSignal } from "solid-js";
 
+const [authenticated, setAuthenticated] = createSignal(false);
+const [token, setToken] = createSignal("");
 const [ready, setReady] = createSignal(false);
 
 async function verifyTokenValditity(token: string): Promise<boolean> {
@@ -12,12 +14,6 @@ async function verifyTokenValditity(token: string): Promise<boolean> {
 }
 
 async function resolveAuthenticationToken() {
-  if (window.location.pathname === "/token") {
-    setTimeout(() => {
-      setReady(true);
-    }, 500);
-    return;
-  }
   if (window.location.search.includes("token=")) {
     const token = new URLSearchParams(window.location.search).get("token");
     if (token) {
@@ -27,23 +23,39 @@ async function resolveAuthenticationToken() {
         return;
       }
     }
+    setToken(token ?? "");
+    setAuthenticated(true);
   } else {
     const token = localStorage.getItem("token");
     if (token) {
       if (!(await verifyTokenValditity(token))) {
         localStorage.removeItem("token");
+        if (window.location.pathname === "/token") {
+          setTimeout(() => {
+            setReady(true);
+          }, 500);
+          return;
+        }
         setTimeout(() => {
           window.location.href = "/api/v1/kinde/login";
         }, 1000);
         return;
       }
     } else {
+      if (window.location.pathname === "/token") {
+        setTimeout(() => {
+          setReady(true);
+        }, 500);
+        return;
+      }
       setTimeout(() => {
         window.location.href = "/api/v1/kinde/login";
       }, 1000);
       return;
     }
+    setToken(token);
   }
+  setAuthenticated(true);
   setTimeout(() => {
     setReady(true);
     if (window.location.pathname === "/") {
@@ -52,4 +64,4 @@ async function resolveAuthenticationToken() {
   }, 500);
 }
 
-export { resolveAuthenticationToken, ready };
+export { resolveAuthenticationToken, ready, authenticated, token };

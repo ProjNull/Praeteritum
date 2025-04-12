@@ -1,9 +1,11 @@
-import { createSignal } from "solid-js";
+import { createComputed, createSignal } from "solid-js";
+import { authenticated } from "./Auth";
 
 const [fullname, setFullname] = createSignal("");
 const [email, setEmail] = createSignal("");
+const [userid, setUserid] = createSignal("");
 
-(async () => {
+const updateUserData = async () => {
   const token = localStorage.getItem("token") ?? "";
   if (token == "") {
     return;
@@ -23,6 +25,15 @@ const [email, setEmail] = createSignal("");
   const email = userData?.email ?? "";
   setEmail(email);
   setFullname(fullUser);
-})();
+  setUserid(userData?.id ?? "");
+};
 
-export { fullname, email };
+createComputed(async () => {
+  if (!authenticated()) {
+    return;
+  } else {
+    await updateUserData();
+  }
+});
+
+export { fullname, email, userid };

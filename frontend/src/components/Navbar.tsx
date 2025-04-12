@@ -1,8 +1,13 @@
 import { A } from "@solidjs/router";
-import { Component } from "solid-js";
+import { Component, createSignal } from "solid-js";
 import { fullname } from "../hooks/User";
+import SettingsModal from "./Settings";
 
-const UserProfile: Component = () => {
+interface UserProfileProps {
+  settingsSetter: (value: boolean) => void;
+}
+
+const UserProfile: Component<UserProfileProps> = ({ settingsSetter }) => {
   return (
     <div class="dropdown dropdown-end">
       <div class="flex flex-row-reverse align-middle items-center gap-2">
@@ -11,7 +16,7 @@ const UserProfile: Component = () => {
             <img
               class="align-middle"
               alt="Tailwind CSS Navbar component"
-              src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
+              src={"https://api.multiavatar.com/" + fullname() + ".png"}
             />
           </div>
         </div>
@@ -25,7 +30,7 @@ const UserProfile: Component = () => {
           <a class="justify-between">Profile</a>
         </li>
         <li>
-          <a>Settings</a>
+          <a onClick={() => settingsSetter(true)}>Settings</a>
         </li>
         <li>
           <A href="/token" activeClass="active" end={true}>
@@ -84,47 +89,51 @@ const NavbarLinks: Component = () => {
 };
 
 const Navbar: Component = () => {
+  const [showSettings, setShowSettings] = createSignal(false);
   return (
-    <nav>
-      <div class="navbar bg-base-200">
-        <div class="navbar-start">
-          <div class="dropdown">
-            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+    <>
+      <nav>
+        <div class="navbar bg-base-200">
+          <div class="navbar-start">
+            <div class="dropdown">
+              <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h8m-8 6h16"
+                  />
+                </svg>
+              </div>
+              <ul
+                tabindex="0"
+                class="menu menu-sm dropdown-content mt-3 z-[3] p-2 shadow bg-base-100 rounded-box w-52"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h8m-8 6h16"
-                />
-              </svg>
+                <NavbarLinks />
+              </ul>
             </div>
-            <ul
-              tabindex="0"
-              class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
-            >
+            <ul class="menu menu-horizontal px-1 hidden z-10 lg:flex">
               <NavbarLinks />
             </ul>
+            <a class="btn btn-ghost text-xl flex lg:hidden">Praeteritum</a>
           </div>
-          <ul class="menu menu-horizontal px-1 hidden lg:flex">
-            <NavbarLinks />
-          </ul>
-          <a class="btn btn-ghost text-xl flex lg:hidden">Praeteritum</a>
+          <div class="navbar-center hidden lg:flex">
+            <a class="btn btn-ghost text-xl">Praeteritum</a>
+          </div>
+          <div class="navbar-end">
+            <UserProfile settingsSetter={setShowSettings} />
+          </div>
         </div>
-        <div class="navbar-center hidden lg:flex">
-          <a class="btn btn-ghost text-xl">Praeteritum</a>
-        </div>
-        <div class="navbar-end">
-          <UserProfile />
-        </div>
-      </div>
-    </nav>
+      </nav>
+      <SettingsModal setter={setShowSettings} getter={showSettings} />
+    </>
   );
 };
 
