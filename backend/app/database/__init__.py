@@ -14,10 +14,10 @@ elif DB_DRIVER == "sqlite":
     SQLALCHEMY_DATABASE_URL = "sqlite:///./sqlite.db"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, echo=False
+    SQLALCHEMY_DATABASE_URL, echo=False
 )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
 
 Base = declarative_base()
 
@@ -45,4 +45,5 @@ def get_session() -> Generator[any, any, Session]:
         session.rollback()
         raise e
     finally:
+        session.commit()
         session.close()
